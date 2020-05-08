@@ -1,0 +1,150 @@
+---
+# Build and configure an ocp4-helper node used in OpenShift 4.4 UPI Install on VMware
+# See also:
+#   https://github.com/RedHatOfficial/ocp4-helpernode
+#   https://github.com/RedHatOfficial/ocp4-vsphere-upi-automation
+#
+- name: Create Virtual Machine in VMware
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    ansible_python_interpreter: python
+    vcenter_vars: /Volumes/Keybase/private/dlbewley/credz/vmware/vars.yml
+    #vcenter_hostname:
+    #vcenter_username:
+    #vcenter_password:
+    #vcenter_datacenter:
+
+    # folder must pre-exist in vCenter
+    vm_folder: /Infra
+    vm_name: ocp4-helper-test
+    vm_power_state: poweredon
+    vm_osid: rhel8_64Guest
+    vm_datastore: VMData-SSD
+    vm_disk_gb: 30
+    vm_disk_type: thick
+    vm_networks:
+      - name: 'VM Network'
+      - name: 'ocp-helper'
+    vm_memory_mb: 4096
+    vm_cpus: 4
+    vm_iso_path: "[FreeNAS] iso/rhel-8.2-x86_64-dvd.iso"
+    vm_ks: http://infra.home.bewley.net/ks/rhel8.cfg
+
+  tasks:
+    - name: Include vmware credential and connectivity vars
+      include_vars: "{{ vcenter_vars }}"
+      no_log: True
+      when: vcenter_vars is defined
+
+    - name: Create VM
+      vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_datacenter }}"
+        validate_certs: False
+        name: "{{ vm_name }}"
+        folder: "{{ vm_folder }}"
+        guest_id: "{{ vm_osid }}"
+        state: "{{ vm_power_state }}"
+        cdrom:
+          type: iso
+          iso_path: "{{ vm_iso_path }}"
+        disk:
+          - type: "{{ vm_disk_type }}"
+            size_gb: "{{ vm_disk_gb }}"
+            datastore: "{{ vm_datastore }}"
+        networks: "{{ vm_networks }}"
+        hardware:
+          memory_mb: "{{ vm_memory_mb }}"
+          num_cpus: "{{ vm_cpus }}"
+
+
+- name: Prep VM for helpernode playbook
+  hosts: ocp4-helper
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    #rhn_org_id: "123"
+    #rhn_activation_key: "act-key"
+    #rhn_pool_ids: [ <uuids> ]
+    helper_node_repo: https://github.com/RedHatOfficial/ocp4-helpernode.git
+    vmware_upi_repo: https://github.com/RedHatOfficial/ocp4-vsphere-upi-automation.git
+    packages:
+      pre:
+      - https://dl.fedoraproject.org/pub/epel/epel-release-latest-{{ ansible_distribution_major_version }}.noarch.rpm
+      post:
+      - ansible
+      - git
+      - jq
+      - nmap
+    # install ssh keys with kickstart preferably or set here
+    #ssh_keys: []
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat'
+
+    - name: Install ssh keys
+      authorized_key:
+        user: root
+        key: "{{ item }}"
+        state: present
+      loop: "{{ ssh_keys }}"
+      when: ssh_keys is defined
+
+    - name: yum update all
+      yum:
+        name: "*"
+        state: latest
+
+    - name: Install EPEL and any early prereqs
+      yum:
+        name: "{{ packages.pre }}"
+        state: latest
+
+
+  roles:
+     - role: RedHatInsights.insights-client
+       when: ansible_os_family == 'RedHat'
+
+
+  tasks:
+    - name: Install prereq packages
+      yum:
+        name: "{{ packages.post }}"
+        state: latest
+
+    - name: Enable services
+      systemd:
+        name: cockpit.socket
+        enabled: true
+
+    - name: Enable IP forwarding
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+      when: dual_homed
+
+    - name: Trust secondary (internal) network interface
+      firewalld:
+        zone: trusted
+        interface: "{{ item }}"
+        state: enabled
+        permanent: yes
+      when: dual_homed and item not in ('lo', ansible_default_ipv4['interface'])
+      loop: "{{ ansible_interfaces }}"
+
+    - name: Clone helpernode playbook
+      git:
+        repo: "{{ helper_node_repo }}"
+        dest: /root/ocp4-helpernode
+
+    - name: Clone VMware UPI playbook
+      git:
+        repo: "{{ vmware_upi_repo }}"
+        dest: /root/vmware-upi

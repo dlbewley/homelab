@@ -1,0 +1,8 @@
+[ocp4]
+ocp4-helper
+ocp4-helper-dual dual_homed=true
+ocp4-helper-test
+
+[other]
+infra
+localhost

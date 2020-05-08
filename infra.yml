@@ -1,0 +1,21 @@
+---
+- hosts: infra
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    named_role: master
+    packages:
+      - bind-chroot
+      - git
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat
+
+  roles:
+     - role: RedHatInsights.insights-client
+       when: ansible_os_family == 'RedHat'
+#     - role: named

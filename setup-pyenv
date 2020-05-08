@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# setup development environment using pyenv-virtualenv
+# https://github.com/pyenv/pyenv-virtualenv
+
+PROJECT='homelab-ansible'
+PYTHON_VER='3.8.2'
+UPGRADE_PIP=true
+INSTALL_SELF=false
+
+echo "Creating Python $PYTHON_VER virutalenv for $PROJECT"
+
+pyenv install $PYTHON_VER --skip-existing || exit 1
+# do not fail if exists
+pyenv virtualenv $PYTHON_VER $PROJECT
+
+eval "$(pyenv init -)"
+pyenv shell $PYTHON_VER || exit 1
+echo "Enabled: $(python -V)"
+
+eval "$(pyenv virtualenv-init -)"
+pyenv activate $PROJECT || exit 1
+echo "Activated: $PYENV_VIRTUAL_ENV"
+
+if [ "$UPGRADE_PIP" = true ]; then
+    pip install --upgrade pip
+fi
+
+pip install -r requirements.txt
+
+if [ "$INSTALL_SELF" = true ]; then
+    # enable local resolution of module
+    pip install --no-deps -e .
+fi
+
+# for editor linting
+pip install pylint
+
+# hint to pyenv-virtualenv
+echo $PROJECT > .python-version
+
+# emit helpful messages
+pyenv init
+pyenv virtualenv-init

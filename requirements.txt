@@ -1,0 +1,5 @@
+wheel
+ansible
+PyVmomi
+# https://docs.ansible.com/ansible/latest/scenario_guides/vmware_scenarios/vmware_inventory.html
+git+https://github.com/vmware/vsphere-automation-sdk-python.git
