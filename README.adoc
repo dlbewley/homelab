@@ -11,10 +11,10 @@ I am using https://keybase.io/[Keybase.io] to hold my secrets, becuase it's slig
 
 == Setup
 
-* link:setup-pyenv creates a virtualenv to satisfy depts for Ansible https://docs.ansible.com/ansible/latest/modules/vmware_guest_module.html[vmware_guest] module like https://pypi.org/project/pyvmomi/[PyVmomi]
-* link:requirements.yml includes some helpful roles from https://galaxy.ansible.com/[Ansible Galaxy] like https://galaxy.ansible.com/redhatinsights/insights-client[insights-client]
+* link:setup-pyenv[] creates a virtualenv to satisfy depts for Ansible https://docs.ansible.com/ansible/latest/modules/vmware_guest_module.html[vmware_guest] module like https://pypi.org/project/pyvmomi/[PyVmomi]
+* link:requirements.yml[] includes some helpful roles from https://galaxy.ansible.com/[Ansible Galaxy] like https://galaxy.ansible.com/redhatinsights/insights-client[insights-client]
 
 == Playbooks
 
-* link:mkhelper.yml - Playbook to build VMware VM and prep OS for munging by https://github.com/RedHatOfficial/ocp4-helpernode[RedHatOfficial / ocp4-helpernode] Playbook prior to contributing back to same
-* link:infra.yml - WIP Playbook for a persistent Infrastructure host.
+* link:mkhelper.yml[] - Playbook to build VMware VM and prep OS for munging by https://github.com/RedHatOfficial/ocp4-helpernode[RedHatOfficial / ocp4-helpernode] Playbook prior to contributing back to same
+* link:infra.yml[] - WIP Playbook for a persistent Infrastructure host.
