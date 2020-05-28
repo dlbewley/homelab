@@ -1,0 +1,20 @@
+#!/bin/bash
+# symlink to oc version using dir structure laid down by getoc
+
+INSTALL_DIR=$HOME/bin
+version=$1
+
+if [ ! -r "${INSTALL_DIR}/oc-${version}" ]; then
+    echo "Version $version does not exist. Did you run getoc"
+    exit 1
+fi
+
+if [ $(uname) == "Darwin" ]; then
+    platform="macosx"
+else
+    platform="linux"
+fi
+
+echo "Linking oc to ${version}/${platform}"
+rm "$INSTALL_DIR/oc"
+ln -s "$INSTALL_DIR/oc-${version}/${platform}/oc" "$INSTALL_DIR/oc"

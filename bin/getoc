@@ -1,0 +1,31 @@
+#!/bin/bash
+# Download oc clients from mirror
+
+OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/clients/
+VERSIONS="4.2 4.3 4.4 nightly"
+PLATFORMS="linux macosx" # windows"
+INSTALL_DIR="$HOME/bin"
+
+if [ $(uname) == "Darwin" ]; then
+    PLATFORMS="macosx"
+else
+    PLATFORMS="linux"
+fi
+
+pushd $INSTALL_DIR
+for version in $VERSIONS; do
+    for platform in $PLATFORMS; do
+        echo "Downloading oc for ${version}/${platform}"
+        mkdir -p "oc-${version}/${platform}"
+        pushd "oc-${version}/${platform}"
+        if [ "$version" == "nightly" ]; then
+            plat=$(echo $platform | sed s/osx//) # Darwin platform name is inconsistent on mirror
+            curl -s -o oc.tar.gz ${OC_BASE_URL}/ocp-dev-preview/latest/openshift-client-${plat}.tar.gz
+        else
+            curl -s -O ${OC_BASE_URL}/oc/${version}/${platform}/oc.tar.gz
+        fi
+        tar xzf oc.tar.gz
+        popd
+    done
+done
+popd
