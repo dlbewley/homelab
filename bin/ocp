@@ -22,7 +22,8 @@ instruct() {
     echo "# wrap call to this script in eval"
     echo "#  eg: 'eval \$($0 $cluster)'"
     echo "#  eg: 'source <($0 $cluster)'"
-    echo "# then 'oc login $OCP_SERVER'"
+    echo "# then 'oc login -u \$OCP_USERNAME -p \"\$OCP_PASSWORD\" \$OCP_SERVER'"
+
     echo "export KUBECONFIG=${dir}/kubeconfig"
     echo "source ${dir}/credz.rc"
     echo $PROMPT | grep kube_ps1 > /dev/null
