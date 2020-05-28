@@ -1,0 +1,57 @@
+#!/bin/bash
+# use this ocp cluster
+
+if [ $(uname) == 'Darwin' ]; then
+    keybase_mnt=/Volumes/Keybase
+else
+    keybase_mnt=/keybase
+fi
+keybase_user=$(keybase config get -b current_user)
+
+base_dir=${keybase_mnt}/private/${keybase_user}/credz/ocp
+cluster=${1:-does-not-exist}
+
+instruct() {
+    dir=$1
+    if [ ! -r "${dir}/kubeconfig" ]; then
+        echo "WARN: kubeconfig not found in '$dir'" >&2
+    fi
+    if [ ! -r "${dir}/credz.rc" ]; then
+        echo "WARN: credz.rc not found in '$dir'" >&2
+    fi
+    echo "# wrap call to this script in eval"
+    echo "#  eg: 'eval \$($0 $cluster)'"
+    echo "#  eg: 'source <($0 $cluster)'"
+    echo "# then 'oc login $OCP_SERVER'"
+    echo "export KUBECONFIG=${dir}/kubeconfig"
+    echo "source ${dir}/credz.rc"
+    echo $PROMPT | grep kube_ps1 > /dev/null
+    if [ $? -ne 0 ]; then
+        echo "# remember 'kubeoff' to disable kube prompt"
+        echo "export PROMPT='\$(kube_ps1)'\$PROMPT"
+    fi
+}
+
+usage() {
+        echo "Usage: $0 {$(ls -1 $base_dir | paste -s -d\| -)}"
+}
+
+case "$cluster" in
+    # some aliases for cluster names if the directory does not match
+    tiger)
+        instruct "${base_dir}/tiger-team"
+        ;;
+    example)
+        instruct "${base_dir}/ocp4-example"
+        ;;
+    *)
+        echo "# cluster $cluster"
+        if [ -d "${base_dir}/$cluster" ]; then
+            instruct "${base_dir}/$cluster"
+        else
+            usage
+            exit 1
+        fi
+        ;;
+esac
+
