@@ -2,6 +2,7 @@
 # symlink to oc version using dir structure laid down by getoc
 
 INSTALL_DIR=$HOME/bin
+CLIENTS="oc kubectl"
 version=$1
 
 if [ ! -r "${INSTALL_DIR}/oc-${version}" ]; then
@@ -15,6 +16,8 @@ else
     platform="linux"
 fi
 
-echo "Linking oc to ${version}/${platform}"
-rm "$INSTALL_DIR/oc"
-ln -s "$INSTALL_DIR/oc-${version}/${platform}/oc" "$INSTALL_DIR/oc"
+echo "Linking clients to ${version}/${platform}"
+for client in $CLIENTS; do
+    rm -f "$INSTALL_DIR/$client"
+    ln -s "$INSTALL_DIR/oc-${version}/${platform}/oc" "$INSTALL_DIR/${client}"
+done
