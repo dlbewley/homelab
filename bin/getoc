@@ -3,6 +3,7 @@
 
 OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/clients/
 VERSIONS="4.2 4.3 4.4 4.5 4.6 latest nightly"
+HELM_VERSIONS="latest"
 PLATFORMS="linux macosx" # windows"
 INSTALL_DIR="$HOME/bin"
 
@@ -25,6 +26,23 @@ for version in $VERSIONS; do
             curl -s -O ${OC_BASE_URL}/oc/${version}/${platform}/oc.tar.gz
         fi
         tar xzf oc.tar.gz
+        popd > /dev/null
+    done
+done
+popd > /dev/null
+
+pushd $INSTALL_DIR > /dev/null
+for version in $HELM_VERSIONS; do
+    for platform in $PLATFORMS; do
+        if [ "$platform" == "macosx" ]; then
+            platform="darwin"
+        fi
+        echo "Downloading helm for ${version}/${platform}"
+        mkdir -p "helm-${version}/${platform}"
+        pushd "helm-${version}/${platform}" > /dev/null
+        curl -s -O ${OC_BASE_URL}/helm/${version}/helm-${platform}-amd64
+        chmod 755 helm-${platform}-amd64
+        ln -s helm-${platform}-amd64 helm
         popd > /dev/null
     done
 done

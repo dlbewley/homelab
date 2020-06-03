@@ -21,3 +21,13 @@ for client in $CLIENTS; do
     rm -f "$INSTALL_DIR/$client"
     ln -s "$INSTALL_DIR/oc-${version}/${platform}/oc" "$INSTALL_DIR/${client}"
 done
+
+version=latest
+echo "Linking helm to ${version}/${platform}"
+if [ "$platform" == "macosx" ]; then
+    platform="darwin"
+fi
+for client in helm; do
+    rm -f "$INSTALL_DIR/$client"
+    ln -s "$INSTALL_DIR/helm-${version}/${platform}/helm" "$INSTALL_DIR/${client}"
+done
