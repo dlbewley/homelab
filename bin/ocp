@@ -1,5 +1,23 @@
 #!/bin/bash
-# use this ocp cluster
+################################################################################
+# ocp - use this ocp cluster
+#-------------------------------------------------------------------------------
+# Sources an RC file for an OpenShift cluster providing credentials and
+# kubeconfig. It is assumed the files live on Keybase.io for safekeeping.
+#
+# Usage is something like the following. Consider adding the 'oclogin' function
+# to your shell:
+#
+#  source <(ocp mycluster)
+#  function oclogin() {
+#      oc login -u $OCP_USERNAME -p $OCP_PASSWORD $OCP_OPTS \
+#        --kubeconfig=$KUBECONFIG $OCP_SERVER
+#  }
+#  oclogin
+#
+################################################################################
+
+CREDRC=credz.rc
 
 if [ $(uname) == 'Darwin' ]; then
     keybase_mnt=/Volumes/Keybase
@@ -11,21 +29,50 @@ keybase_user=$(keybase config get -b current_user)
 base_dir=${keybase_mnt}/private/${keybase_user}/credz/ocp
 cluster=${1:-does-not-exist}
 
+usage() {
+        echo "Usage: $0 {$(ls -1 $base_dir | paste -s -d\| -)}" >&2
+        echo ""
+        echo "It's expected that $base_dir/$cluster/$CREDRC looks something like this:"
+        echo ""
+        cat <<EOF
+# I am $CREDRC
+export OCP_SERVER="https://api.${cluster}.domain:6443/"
+export KUBEADMIN_PASSWORD="secret"
+#export OCP_OPTS='--insecure-skip-tls-verify=true'
+export OCP_OPTS=''
+export OCP_USERNAME="kubeadmin"
+export OCP_PASSWORD="${KUBEADMIN_PASSWORD}"
+# leave this unset for cross platform compibility!
+#export KUBECONFIG="/Volumes/Keybase/private/${keybase_user}/credz/ocp/${cluster}/kubeconfig"
+#export OCP_CLUSTER_GUID="nonce"
+#export AWS_PROFILE=${cluster}
+#export AWS_ACCESS_KEY_ID=key
+#export AWS_SECRET_ACCESS_KEY=secret
+EOF
+}
+
 instruct() {
     dir=$1
     if [ ! -r "${dir}/kubeconfig" ]; then
         echo "WARN: kubeconfig not found in '$dir'" >&2
     fi
-    if [ ! -r "${dir}/credz.rc" ]; then
-        echo "WARN: credz.rc not found in '$dir'" >&2
+    if [ ! -r "${dir}/$CREDRC" ]; then
+        echo "ERROR: $CREDRC not found in '$dir'" >&2
+        usage
+        exit 1
     fi
-    echo "# wrap call to this script in eval"
+    echo "# Wrap your call to this script in 'eval'"
     echo "#  eg: 'eval \$($0 $cluster)'"
     echo "#  eg: 'source <($0 $cluster)'"
-    echo "# then 'oc login -u \$OCP_USERNAME -p \"\$OCP_PASSWORD\" \$OCP_SERVER'"
+    echo "# "
+    echo "# Then consider an 'oclogin' function like this:"
+    echo "#  function oclogin() {"
+    echo '#      oc login -u $OCP_USERNAME -p $OCP_PASSWORD $OCP_OPTS --kubeconfig=$KUBECONFIG $OCP_SERVER'
+    echo "#  }"
 
+    # platform neutral default kubeconfig location which may be duplicated OR absent from $CREDRC
     echo "export KUBECONFIG=${dir}/kubeconfig"
-    echo "source ${dir}/credz.rc"
+    echo "source ${dir}/$CREDRC"
     echo $PROMPT | grep kube_ps1 > /dev/null
     if [ $? -ne 0 ]; then
         echo "# remember 'kubeoff' to disable kube prompt"
@@ -33,12 +80,8 @@ instruct() {
     fi
 }
 
-usage() {
-        echo "Usage: $0 {$(ls -1 $base_dir | paste -s -d\| -)}"
-}
-
 case "$cluster" in
-    # some aliases for cluster names if the directory does not match
+    # aliases may be created the directory does not the cluster name
     tiger)
         instruct "${base_dir}/tiger-team"
         ;;
@@ -55,4 +98,5 @@ case "$cluster" in
         fi
         ;;
 esac
+
 
