@@ -1,11 +1,13 @@
 #!/bin/bash
 # Download oc clients from mirror
 
-OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/clients/
 VERSIONS="4.2 4.3 4.4 4.5 4.6 latest nightly"
+CLIENT_VERSIONS="4.4"
+INSTALLER_VERSIONS="4.4"
 HELM_VERSIONS="latest"
 PLATFORMS="linux macosx" # windows"
 INSTALL_DIR="$HOME/bin"
+OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/clients/
 
 if [ $(uname) == "Darwin" ]; then
     PLATFORMS="macosx"
@@ -13,37 +15,40 @@ else
     PLATFORMS="linux"
 fi
 
+function download_helm() {
+    version = $1
+    platform = $2
+
+    echo "Downloading helm for ${version}/${platform}"
+    mkdir -p "helm-${version}/${platform}"
+    pushd "helm-${version}/${platform}" > /dev/null
+    plat=$(echo $platform | sed s/macosx/darwin/) # Darwin platform name is inconsistent on mirror
+    curl -s -O ${OC_BASE_URL}/helm/${version}/helm-${plat}-amd64
+    chmod 755 helm-${plat}-amd64
+    ln -s helm-${plat}-amd64 helm
+    popd > /dev/null
+}
+
 pushd $INSTALL_DIR > /dev/null
-for version in $VERSIONS; do
+for version in $CLIENT_VERSIONS; do
     for platform in $PLATFORMS; do
         echo "Downloading oc for ${version}/${platform}"
         mkdir -p "oc-${version}/${platform}"
         pushd "oc-${version}/${platform}" > /dev/null
         if [ "$version" == "nightly" ]; then
-            plat=$(echo $platform | sed s/osx//) # Darwin platform name is inconsistent on mirror
-            curl -s -o oc.tar.gz ${OC_BASE_URL}/ocp-dev-preview/latest/openshift-client-${plat}.tar.gz
+            # Darwin platform name is inconsistent on mirror
+            curl -s -o oc.tar.gz ${OC_BASE_URL}/ocp-dev-preview/latest/openshift-client-$(echo $platform | sed s/osx//).tar.gz
         else
             curl -s -O ${OC_BASE_URL}/oc/${version}/${platform}/oc.tar.gz
+            echo $INSTALLER_VERSIONS | grep $version >/dev/null
+            if [ $? -eq 0 ]; then curl -s -O ${OC_BASE_URL}/ocp/latest-${version}/openshift-install-$(echo $platform | sed s/osx//).tar.gz; fi
+            echo $HELM_VERSIONS | grep $version >/dev/null
+            if [ $? -eq 0 ]; then download_helm $version $platform; fi
         fi
         tar xzf oc.tar.gz
+        tar xzf openshift-install-$(echo $platform | sed s/osx//).tar.gz
         popd > /dev/null
     done
 done
 popd > /dev/null
 
-pushd $INSTALL_DIR > /dev/null
-for version in $HELM_VERSIONS; do
-    for platform in $PLATFORMS; do
-        if [ "$platform" == "macosx" ]; then
-            platform="darwin"
-        fi
-        echo "Downloading helm for ${version}/${platform}"
-        mkdir -p "helm-${version}/${platform}"
-        pushd "helm-${version}/${platform}" > /dev/null
-        curl -s -O ${OC_BASE_URL}/helm/${version}/helm-${platform}-amd64
-        chmod 755 helm-${platform}-amd64
-        ln -s helm-${platform}-amd64 helm
-        popd > /dev/null
-    done
-done
-popd > /dev/null
