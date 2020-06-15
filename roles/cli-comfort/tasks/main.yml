@@ -1,0 +1,7 @@
+---
+# tasks file for cli-comfort
+
+- name: install tmux.conf
+  copy:
+    src: .tmux.conf
+    dest: /root/.tmux.conf

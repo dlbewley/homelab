@@ -1,0 +1,35 @@
+---
+# Request ocp3 operations lab
+# On Bastion host
+#   Copy repo
+#   Recreate vars.yml with RHSN credentials
+#   Run this playbook
+
+- hosts: localhost
+  connection: local
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat'
+
+  roles:
+    - cli-comfort
+
+- hosts: all
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat'
+
