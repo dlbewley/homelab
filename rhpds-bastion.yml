@@ -1,0 +1,40 @@
+---
+# file: rhpds-bastion.yml
+# run from workstation with `./bin/ocp` script in path
+#  source <(ocp lab)
+#  ansible-playbook -i $OCP_BASTION, -u $TLC_USER rhpds-bastion.yml
+
+- hosts: all
+  gather_facts: false
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    homelab_repo: https://github.com/dlbewley/homelab.git
+    pull_secret: "{{ lookup('env', 'PULL_SECRET') }}"
+    pull_secret_dest: "/root/.pull_secret"
+
+  roles:
+    - cli-comfort
+
+  tasks:
+    - name: checkout homelab repo
+      git:
+        repo: "{{ homelab_repo }}"
+        dest: "/root/homelab"
+
+    - name: copy pull secret
+      copy:
+        content: "{{ pull_secret }}"
+        dest: "{{ pull_secret_dest }}"
+        owner: root
+        mode: 0600
+
+    - name: copy rhn credential vars
+      copy:
+        src: "{{ rhn_vars }}"
+        dest: /root/vars.yml
+        owner: root
+        mode: 0600
+
