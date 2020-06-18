@@ -18,3 +18,10 @@ I am using https://keybase.io/[Keybase.io] to hold my secrets, becuase it's slig
 
 * link:mkhelper.yml[] - Playbook to build VMware VM and prep OS for munging by https://github.com/RedHatOfficial/ocp4-helpernode[RedHatOfficial / ocp4-helpernode] Playbook prior to contributing back to same
 * link:infra.yml[] - WIP Playbook for a persistent Infrastructure host.
+* link:rhpds-bastion.yml[] - Prep a Red Hat Product Demo System bastion host for use.
+
+== Roles
+
+* link:roles/ocp3/[] - Configure ocp3 lab
+
+== OpenShift
