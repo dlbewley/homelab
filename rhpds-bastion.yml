@@ -1,0 +1,31 @@
+---
+# file: rhpds-bastion.yml
+# run from workstation with `./bin/ocp` script in path
+#  source <(ocp lab)
+#  ansible-playbook -i $OCP_BASTION, -u $TLC_USER rhpds-bastion.yml
+
+- hosts: all
+  gather_facts: true
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    homelab_repo: https://github.com/dlbewley/homelab.git
+    pull_secret: "{{ lookup('env', 'PULL_SECRET') }}"
+    pull_secret_dest: "/root/.pull_secret"
+    guid: PLZ_SUPPLY
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat'
+
+  roles:
+    - cli-comfort
+
+  tasks:
+    - name: Setup ocp3 bastion
+      import_role:
+        name: ocp3
+        tasks_from: bastion.yml
