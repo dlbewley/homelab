@@ -1,33 +1,45 @@
 # {{ ansible_managed | comment }}
 
-# option definitions common to all supported networks...
+# Common settings
 option domain-name "{{ dhcpd_domain_name }}";
 option domain-name-servers {{ dhcpd_domain_name_servers | join(', ') }};
-
 default-lease-time {{ dhcpd_default_lease_time }};
 max-lease-time {{ dhcpd_max_lease_time }};
-
-{% if dhcpd_next_server %}next-server {{ dhcpd_next_server }};
-{% endif %}
-{% if dhcpd_filename %}filename "{{ dhcpd_filename  }}";
-{% endif %}
-
 ddns-update-style {{ dhcpd_ddns_update_style }};
-
 {% if dhcpd_authoritative %}authoritative;{% endif %}
 
-# Example
-#subnet 192.168.4.0 netmask 255.255.255.0 {
-#  range 192.168.4.10 192.168.4.199;
-#  option domain-name-servers 192.168.1.177, 192.168.1.1;
-#  option routers 192.168.4.1;
-#}
+{% if dhcpd_pxe %}
+# Common PXE settings
+option space pxelinux;
+option pxelinux.magic code 208 = string;
+option pxelinux.configfile code 209 = text;
+option pxelinux.pathprefix code 210 = text;
+option pxelinux.reboottime code 211 = unsigned integer 32;
+option architecture-type code 93 = unsigned integer 16;
+{% if dhcpd_filename %}filename "{{ dhcpd_filename  }}";
+{% endif %}
+{% if dhcpd_next_server %}next-server {{ dhcpd_next_server }};
+{% endif %}
+{% endif %}
 
+# Subnet specific settings
 {% for subnet in dhcpd_subnets %}
-# Subnet {{ subnet.name | default(omit) }} {{ subnet.description | default(omit) }}
+{% if subnet.name is defined %}# {{ subnet.name }}{% endif %}{% if subnet.description is defined %} {{ subnet.description }}
+{% endif %}
 subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
-{% if subnet.range_start is defined and subnet.range_end is defined %} range {{ subnet.range_start }} {{ subnet.range_end }}; {% endif %}
-{% if subnet.filename is defined %}  filename "{{ subnet.filename }}";\n{% endif %}
-{% if subnet.next_server is defined %}  next-server {{ subnet.next_server }};\n{% endif %}
+{% if subnet.range_start is defined and subnet.range_end is defined %}  range {{ subnet.range_start }} {{ subnet.range_end }};
+{% endif %}
+{% if dhcpd_pxe or subnet.pxe %}
+  class "pxeclients" {
+    match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+    next-server {% if subnet.next_server is defined %}{{ subnet.next_server }}{% else %}{{ dhcpd_next_server }}{% endif %};
+    if option architecture-type = 00:07 {
+      filename "{% if subnet.filename_uefi is defined %}{{ subnet.filename_uefi }}{% else %}{{ dhcpd_filename_uefi }}{% endif %}";
+    } else {
+      filename "{% if subnet.filename is defined %}{{ subnet.filename }}{% else %}{{ dhcpd_filename }}{% endif %}";
+    }
+  }
+{% endif %}
 }
+
 {% endfor %}

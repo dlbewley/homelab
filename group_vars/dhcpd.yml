@@ -8,7 +8,8 @@ dhcpd_filename: /pxelinux.0
 dhcpd_ddns_update_style: standard
 
 dhcpd_subnets:
-  - name: lab
+  - name: lab4
+    description: Lab Network lab.bewley.net
     network: 192.168.4.0
     netmask: 255.255.255.0
     range_start: 192.168.4.10

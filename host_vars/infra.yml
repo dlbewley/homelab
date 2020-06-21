@@ -1,0 +1,10 @@
+---
+# file: host-vars/infra.yml
+connections:
+  - name: lab4
+    interface: ens224
+    ipv4:
+      method: static
+      address: 192.168.4.2/24
+      gateway: 192.168.4.1
+

@@ -1,9 +1,9 @@
 ---
-# tasks file for dhcpd
-#
+# file: dhcpd/tasks/main.yml
+
 - name: Install Packages
   yum:
-    name: dhcp-server
+    name: "{{ dhcpd_packages }}"
     state: installed
 
 - name: Configure Service
@@ -11,10 +11,17 @@
     src: dhcpd.conf.j2
     dest: "{{ dhcpd_config }}"
     backup: yes
-  notify: reload dhcpd
+  notify: restart dhcpd
 
 - name: Enable Services
   service:
     name: dhcpd
     enabled: yes
     state: started
+
+- name: Open Firewall
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: yes
+  loop: "{{ dhcpd_firewall_services }}"

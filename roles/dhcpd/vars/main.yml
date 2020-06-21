@@ -1,2 +1,9 @@
 ---
-# vars file for dhcpd
+# dhcpd/vars/main.yml
+
+dhcpd_packages:
+  - dhcp-server
+dhcpd_services:
+  - dhcpd
+dhcpd_firewall_services:
+  - dhcp

@@ -29,6 +29,7 @@ Dependencies
 ------------
 
 Named is coming in support of dynamic DNS updates.
+PXE role needed if `dhcpd_pxe=true`
 
 Example Playbook
 ----------------

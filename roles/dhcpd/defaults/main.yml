@@ -2,13 +2,15 @@
 # file: dhcpd/defaults/main.yml
 
 dhcpd_config: /etc/dhcp/dhcpd.conf
+dhcpd_pxe: true
 dhcpd_domain_name: example.com
 dhcpd_domain_name_servers:
   - 8.8.8.8
 dhcpd_default_lease_time: 600
 dhcpd_max_lease_time: 7200
 dhcpd_next_server:
-dhcpd_filename:
+dhcpd_filename: pxelinux/pxelinux.0
+dhcpd_filename_uefi: uefi/shim.efi
 dhcpd_ddns_update_style: none
 dhcpd_authoritative: true
 dhcpd_subnets: {}
