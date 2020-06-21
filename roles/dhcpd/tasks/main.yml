@@ -1,0 +1,20 @@
+---
+# tasks file for dhcpd
+#
+- name: Install Packages
+  yum:
+    name: dhcp-server
+    state: installed
+
+- name: Configure Service
+  template:
+    src: dhcpd.conf.j2
+    dest: "{{ dhcpd_config }}"
+    backup: yes
+  notify: reload dhcpd
+
+- name: Enable Services
+  service:
+    name: dhcpd
+    enabled: yes
+    state: started

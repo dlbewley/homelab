@@ -1,0 +1,7 @@
+---
+# handlers file for dhcpd
+
+- name: reload dhcpd
+  service:
+    name: dhcpd
+    state: reloaded

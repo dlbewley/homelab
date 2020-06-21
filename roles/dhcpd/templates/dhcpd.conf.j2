@@ -1,0 +1,33 @@
+# {{ ansible_managed | comment }}
+
+# option definitions common to all supported networks...
+option domain-name "{{ dhcpd_domain_name }}";
+option domain-name-servers {{ dhcpd_domain_name_servers | join(', ') }};
+
+default-lease-time {{ dhcpd_default_lease_time }};
+max-lease-time {{ dhcpd_max_lease_time }};
+
+{% if dhcpd_next_server %}next-server {{ dhcpd_next_server }};
+{% endif %}
+{% if dhcpd_filename %}filename "{{ dhcpd_filename  }}";
+{% endif %}
+
+ddns-update-style {{ dhcpd_ddns_update_style }};
+
+{% if dhcpd_authoritative %}authoritative;{% endif %}
+
+# Example
+#subnet 192.168.4.0 netmask 255.255.255.0 {
+#  range 192.168.4.10 192.168.4.199;
+#  option domain-name-servers 192.168.1.177, 192.168.1.1;
+#  option routers 192.168.4.1;
+#}
+
+{% for subnet in dhcpd_subnets %}
+# Subnet {{ subnet.name | default(omit) }} {{ subnet.description | default(omit) }}
+subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
+{% if subnet.range_start is defined and subnet.range_end is defined %} range {{ subnet.range_start }} {{ subnet.range_end }}; {% endif %}
+{% if subnet.filename is defined %}  filename "{{ subnet.filename }}";\n{% endif %}
+{% if subnet.next_server is defined %}  next-server {{ subnet.next_server }};\n{% endif %}
+}
+{% endfor %}
