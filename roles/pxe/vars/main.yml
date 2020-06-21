@@ -1,0 +1,13 @@
+---
+# vars file for pxe
+pxe_packages:
+  - tftp-server
+  - syslinux
+  - syslinux-tftpboot
+  - ipxe-bootimgs
+
+pxe_services:
+  - tftp
+
+pxe_firewall_services:
+  - tftp

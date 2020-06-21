@@ -4,18 +4,45 @@
   become_user: root
 
   vars:
-    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    #rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    rhn_vars: /keybase/private/dlbewley/credz/redhat/vars.yml
     named_role: master
     packages:
       - bind-chroot
       - git
+      - nfs-utils
+    firewall_services:
+      - http
 
   pre_tasks:
+    # $ nmcli con add type ethernet ifname ens224 con-name lab4 ipv4.addresses 192.168.4.2/24 ipv4.gateway 192.168.4.1 ipv4.method static
+    # - name: Include Network Setup
+    #   include_tasks: tasks/network-nmcli.yml
     - name: Include Red Hat pre tasks
       include_tasks: tasks/RedHat-pre-tasks.yml
       when: ansible_os_family == 'RedHat'
+      tags: [ registration ]
 
   roles:
      - role: RedHatInsights.insights-client
        when: ansible_os_family == 'RedHat'
-#     - role: named
+       tags: [ registration ]
+     - role: dhcpd
+       when: '"dhcpd" in group_names'
+     - role: pxe 
+       when: '"pxe" in group_names'
+     - role: named
+       when: '"named" in group_names'
+
+  tasks:
+      - name: install packages
+        yum:
+          name: "{{ packages }}"
+          state: present
+
+      - name: open firewall
+        firewalld:
+          service: "{{ item }}"
+          state: enabled
+          permanent: yes
+        loop: "{{ firewall_services }}"

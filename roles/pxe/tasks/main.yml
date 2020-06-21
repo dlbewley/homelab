@@ -1,0 +1,21 @@
+---
+# file: pxe/tasks/main.yml
+
+- name: Install Packages
+  yum:
+    name: "{{ pxe_packages }}"
+    state: installed
+
+- name: Enable Services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop: "{{ pxe_services }}"
+
+- name: Open Firewall
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: yes
+  loop: "{{ pxe_firewall_services }}"
