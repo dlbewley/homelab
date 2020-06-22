@@ -4,7 +4,6 @@ dhcpd_domain_name: "lab.bewley.net"
 dhcpd_domain_name_servers:
   - 192.168.1.177
 dhcpd_next_server: 192.168.1.177
-dhcpd_filename: /pxelinux.0
 dhcpd_ddns_update_style: standard
 
 dhcpd_subnets:
