@@ -1,5 +1,5 @@
 ---
-# dhcpd/vars/main.yml
+# file: dhcpd/vars/main.yml
 
 dhcpd_packages:
   - dhcp-server

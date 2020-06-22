@@ -10,7 +10,7 @@ dhcpd_default_lease_time: 600
 dhcpd_max_lease_time: 7200
 dhcpd_next_server:
 dhcpd_filename: pxelinux/pxelinux.0
-dhcpd_filename_uefi: uefi/shim.efi
+dhcpd_filename_uefi: uefi/shimx64.efi
 dhcpd_ddns_update_style: none
 dhcpd_authoritative: true
 dhcpd_subnets: {}
