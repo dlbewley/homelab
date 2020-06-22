@@ -23,14 +23,18 @@
     - pxelinux/pxelinux.cfg
     - uefi
 
-- name: Copy PXE image to tftpboot
+- name: Enumerate syslinux files
+  find:
+    path: "/usr/share/syslinux"
+  register: syslinux_files
+
+- name: Copy syslinux files to tftpboot
   copy:
-    src: "/usr/share/syslinux/{{ item }}"
-    dest: "{{ pxe_tftpboot }}/{{ item }}"
+    src: "{{ item.path }}"
+    dest: "{{ pxe_tftpboot }}/"
     mode: 0644
     remote_src: true
-  loop:
-    - pxelinux.0
+  loop: "{{ syslinux_files.files }}"
 
 - name: Copy UEFI images to tftpboot
   copy:
