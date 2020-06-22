@@ -6,6 +6,48 @@
     name: "{{ pxe_packages }}"
     state: installed
 
+- name: Setup tftpboot directories
+  file:
+    path: "{{ pxe_tftpboot }}/{{ item }}"
+    state: directory
+    mode: 0755
+    recurse: true
+  loop:
+    - boot/grub2
+    - images/centos
+    - images/fedora
+    - images/ocp/4
+    - images/rhcos
+    - images/rhel/7
+    - images/rhel/8
+    - pxelinux/pxelinux.cfg
+    - uefi
+
+- name: Copy PXE image to tftpboot
+  copy:
+    src: "/usr/share/syslinux/{{ item }}"
+    dest: "{{ pxe_tftpboot }}/{{ item }}"
+    mode: 0644
+    remote_src: true
+  loop:
+    - pxelinux.0
+
+- name: Copy UEFI images to tftpboot
+  copy:
+    src: "/boot/efi/EFI/redhat/{{ item }}"
+    dest: "{{ pxe_tftpboot }}/uefi/{{ item }}"
+    mode: 0644
+    remote_src: true
+  loop:
+    - shimx64.efi
+    - grubx64.efi
+
+#- name: Install default pxe config
+#  template:
+#    src: default-menu.j2
+#    dest: "{{ pxe_tftpboot }}/pxelinux/pxelinux.cfg/default"
+#    mode: 0644
+
 - name: Enable Services
   service:
     name: "{{ item }}"

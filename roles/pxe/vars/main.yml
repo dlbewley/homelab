@@ -7,7 +7,7 @@ pxe_packages:
   - ipxe-bootimgs
 
 pxe_services:
-  - tftp
+  - tftp.socket
 
 pxe_firewall_services:
   - tftp

@@ -1,2 +1,4 @@
 ---
-# defaults file for pxe
+# file: pxe/default/main.yml
+
+pxe_tftpboot: /var/lib/tftpboot
