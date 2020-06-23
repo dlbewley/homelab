@@ -58,8 +58,6 @@ Dependencies
 
 * PXE role needed if `dhcpd_pxe=true`
 
-[root@infra chroot]# rndc -k etc/rndc.key freeze lab.bewley.net
-
 Example Playbook
 ----------------
 
