@@ -4,7 +4,7 @@ dhcpd_domain_name: "lab.bewley.net"
 dhcpd_domain_name_servers:
   - 192.168.1.177
 dhcpd_next_server: 192.168.1.177
-dhcpd_ddns_update_style: standard
+dhcpd_ddns_update_style: interim
 
 dhcpd_subnets:
   - name: lab4
