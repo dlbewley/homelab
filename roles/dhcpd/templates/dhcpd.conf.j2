@@ -23,6 +23,21 @@ option architecture-type code 93 = unsigned integer 16;
 {% endif %}
 {% endif %}
 
+# DNS settings
+{% if dhcpd_ddns_update_style not in ("none") %}
+{% for subnet in dhcpd_subnets %}
+include "/etc/dhcp/{{ subnet.zone_key }}.key";
+{% if subnet.zones is defined %}
+{% for zone in subnet.zones %}
+zone {{ zone.domain }}. {
+  primary {{ zone.domain_name_server }};
+  key {{ subnet.zone_key }};
+}
+{% endfor %}
+{% endif %}
+{% endfor %}
+{% endif %}
+
 # Subnet specific settings
 {% for subnet in dhcpd_subnets %}
 {% if subnet.name is defined %}# {{ subnet.name }}{% endif %}{% if subnet.description is defined %} {{ subnet.description }}
