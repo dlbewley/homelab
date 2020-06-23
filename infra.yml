@@ -13,6 +13,10 @@
       - nfs-utils
     firewall_services:
       - http
+    # disable this slow step for now.
+    # enable if /usr/share/syslniux changes
+    pxe_copy_syslinux: false
+    pxe_repo_http_server: 192.168.4.2
 
   pre_tasks:
     # $ nmcli con add type ethernet ifname ens224 con-name lab4 ipv4.addresses 192.168.4.2/24 ipv4.gateway 192.168.4.1 ipv4.method static
@@ -27,12 +31,18 @@
      - role: RedHatInsights.insights-client
        when: ansible_os_family == 'RedHat'
        tags: [ registration ]
+
      - role: dhcpd
        when: '"dhcpd" in group_names'
+       tags: [ dhcpd ]
+
      - role: pxe 
        when: '"pxe" in group_names'
+       tags: [ pxe ]
+
      - role: named
        when: '"named" in group_names'
+       tags: [ named ]
 
   tasks:
       - name: install packages
