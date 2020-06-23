@@ -28,6 +28,7 @@ option architecture-type code 93 = unsigned integer 16;
 {% if subnet.name is defined %}# {{ subnet.name }}{% endif %}{% if subnet.description is defined %} {{ subnet.description }}
 {% endif %}
 subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
+  option routers {{ subnet.routers }};
 {% if subnet.range_start is defined and subnet.range_end is defined %}  range {{ subnet.range_start }} {{ subnet.range_end }};
 {% endif %}
 {% if dhcpd_pxe or subnet.pxe %}
