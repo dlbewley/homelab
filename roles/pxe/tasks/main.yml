@@ -20,13 +20,14 @@
     - images/rhcos
     - images/rhel/7
     - images/rhel/8
-    - pxelinux/pxelinux.cfg
+    - pxelinux.cfg
     - uefi
 
 - name: Enumerate syslinux files
   find:
     path: "/usr/share/syslinux"
   register: syslinux_files
+  when: pxe_copy_syslinux
 
 - name: Copy syslinux files to tftpboot
   copy:
@@ -35,6 +36,7 @@
     mode: 0644
     remote_src: true
   loop: "{{ syslinux_files.files }}"
+  when: pxe_copy_syslinux
 
 - name: Copy UEFI images to tftpboot
   copy:
@@ -46,11 +48,25 @@
     - shimx64.efi
     - grubx64.efi
 
-#- name: Install default pxe config
-#  template:
-#    src: default-menu.j2
-#    dest: "{{ pxe_tftpboot }}/pxelinux/pxelinux.cfg/default"
-#    mode: 0644
+- name: Create but netdir
+  command: grub2-mknetdir --net-directory=/var/lib/tftpboot
+  args:
+    creates: "{{ pxe_tftpboot }}/boot/grub2/i386-pc"
+
+- name: Install boot.msg
+  template:
+    src: boot.msg.j2
+    dest: "{{ pxe_tftpboot }}/boot.msg"
+    mode: 0644
+
+- name: Install default pxe config
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ pxe_tftpboot }}/pxelinux.cfg/{{ item }}"
+    mode: 0644
+  loop:
+    - default
+    - local-disk
 
 - name: Enable Services
   service:
