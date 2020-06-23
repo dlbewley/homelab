@@ -20,7 +20,7 @@
 
 - name: drop a starting point inventory file
   template:
-    name: hosts.ocp3.j2
+    name: hosts.{{ ocp_env }}.j2
     dest: /root/hosts
 
 - name: TODO
