@@ -2,3 +2,5 @@
 # file: pxe/default/main.yml
 
 pxe_tftpboot: /var/lib/tftpboot
+pxe_repo_http_server: "{{ inventory_hostname }}"
+pxe_copy_syslinux: true
