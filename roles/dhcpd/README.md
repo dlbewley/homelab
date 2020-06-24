@@ -1,5 +1,4 @@
-dhcpd
-=====
+# dhcpd
 
 Configure ISC dhcpd including support for:
 
@@ -7,72 +6,69 @@ Configure ISC dhcpd including support for:
 * PXE boot
 * Per Subnet configuration
 
-
-Requirements
-------------
+## Requirements
 
 none
 
-Role Variables
---------------
+## Role Variables
 
-This is it for docs right now.
+These defaults values may be overriden.
+
+Variable              | Default | Description
+----------------------|---------|-------------
+`dhcpd_authoritative`	| _true_	| Claim sole DHCP responsibility for this broadcast domain.
+`dhcpd_config`	| _/etc/dhcp/dhcpd.conf_	| Location of config file to generate.
+`dhcpd_ddns_update_style`	| _'none'_	| Choose: _none_, _interim_, or _standard_
+`dhcpd_default_lease_time`	| _600_	| DHCP client lease TTL.
+`dhcpd_domain_name`	| _example.com_	| Domain name returned to clients. May be overridden in subnet.
+`dhcpd_domain_name_servers`	| _[ 8.8.8.8 ]_	| 
+`dhcpd_filename`	| _pxelinux.0_	| May be overridden in subnet.
+`dhcpd_filename_uefi`	| _uefi/shimx64.efi_	| May be overridden in subnet.
+`dhcpd_max_lease_time`	| _7200_	| Allow requests for DHCP client leases up to this long.
+`dhcpd_next_server`	| _''_	| Needed when enabling PXE. May be overridden in subnet.
+`dhcpd_pxe`	| _true_	| Enable support for PXE booting.
+`dhcpd_subnets`	| _{}_	| Dictionary of subnet definitions. See example below.
+
+### Example `dhcpd_subnets`
+
+This example includes configuration for dynamic DNS updates.
 
 ```yaml
-dhcpd_config: /etc/dhcp/dhcpd.conf
-dhcpd_pxe: true
-dhcpd_domain_name: example.com
-dhcpd_domain_name_servers:
-  - 8.8.8.8
-dhcpd_default_lease_time: 600
-dhcpd_max_lease_time: 7200
-dhcpd_next_server:
-dhcpd_filename: pxelinux.0
-dhcpd_filename_uefi: uefi/shimx64.efi
-# Options: none, interim, standard
-dhcpd_ddns_update_style: none
-dhcpd_authoritative: true
-dhcpd_subnets: {}
-# Example including dyn dns
-# dhcpd_subnets:
-#   - name: lab4
-#     description: Lab Network lab.bewley.net
-#     network: 192.168.4.0
-#     netmask: 255.255.255.0
-#     range_start: 192.168.4.10
-#     range_end: 192.168.4.199
-#     routers: 192.168.4.1
-#     next_server: 192.168.4.2
-#     domain_name_servers:
-#       - 192.168.4.2
-#     zone_key: lab.bewley.net
-#     zones:
-#       - domain: lab.bewley.net
-#         domain_name_server: 192.168.1.177
-#       - domain: 4.168.192.in-addr.arpa
-#         domain_name_server: 192.168.1.177
+ dhcpd_subnets:
+   - name: lab4
+     description: Experimental Lab Network
+     network: 192.168.4.0
+     netmask: 255.255.255.0
+     range_start: 192.168.4.10
+     range_end: 192.168.4.199
+     routers: 192.168.4.1
+     next_server: 192.168.4.2
+     domain_name_servers:
+       - 192.168.4.2
+     zone_key: lab.bewley.net
+     zones:
+       - domain: lab.bewley.net
+         domain_name_server: 192.168.1.177
+       - domain: 4.168.192.in-addr.arpa
+         domain_name_server: 192.168.1.177
 ```
 
-Dependencies
-------------
+## Dependencies
 
 * PXE role needed if `dhcpd_pxe=true`
 
-Example Playbook
-----------------
+## Example Playbook
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+```yaml
+  - hosts: dhcp
+    roles:
+       - { role: dhcpd, dhcpd_domain_name: guifreelife.com }
+```
 
-    - hosts: servers
-      roles:
-         - { role: dhcpd, dhcpd_domain_name: guifreelife.com }
-
-License
--------
+## License
 
 BSD
 
-Author Information
-------------------
+## Author Information
 
-Dale Bewley
+Dale Bewley @dlbewley
