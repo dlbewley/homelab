@@ -6,8 +6,29 @@
 
 = Tools to Help with My Home Lab Setup
 
+.**Secrets**
 [TIP]
 I am using https://keybase.io/[Keybase.io] to hold my secrets, becuase it's slightly simpler than https://docs.ansible.com/ansible/latest/user_guide/vault.html[Ansible vault] and I don't have anything fancy like https://www.vaultproject.io/[Hashi Vault] at this time.
+
+.**Red Hat Subscriptions**
+[TIP]
+====
+To use Red Hat subscriptions:
+
+* Create an activation key for the _Employee SKU_ subscription in https://access.redhat.com/management/activation_keys[the portal].
+* Create an ansible vars file in keybase kinda like the following to be used by link:tasks/RedHat-pre-tasks.yml[]
+
+[source,yaml]
+----
+rhn_org_id: "99999999"
+rhn_activation_key: employee-sku
+rhn_pool_ids:
+  # physical
+  #- 99999999999999999999999999999999
+  # virtual
+  - 88888888888888888888888888888888
+----
+====
 
 == Setup
 
