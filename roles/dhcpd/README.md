@@ -10,6 +10,49 @@ Configure ISC dhcpd including support for:
 
 none
 
+### DNS Support
+
+Enabling dynamic DNS support requires a key to authenticate to BIND with.
+
+At this time placing the key is manual.
+
+**Example steps to enable dynamic DNS updates with chrooted named.**
+
+* Create a key file holding a key named _lab.bewley.net_: `rndc-confgen -k lab.bewley.net -b 512`
+
+```
+$ cat lab.bewley.net.key
+key "lab.bewley.net" {
+        algorithm hmac-md5;
+        secret "Mcccccclvlggvbulfvhfjffiehkjedrlhcnulkfdtjftug==";
+};
+```
+
+* Store the key somewhere safe like Keybase.io
+* Copy key file to `/var/named/chroot/etc/lab.bewley.net.key`.
+* Tell named to trust it with something like this in `/var/named/chroot/etc/named.conf`:
+
+```
+include "/etc/lab.bewley.net.key";
+
+zone "4.168.192.in-addr.arpa" IN {
+        type master;
+        file "db.192.168.4.in-addr.arpa";
+        allow-update { key lab.bewley.net; };
+};
+
+zone "lab.bewley.net" IN {
+        type master;
+        file "db.lab.bewley.net";
+        allow-update { key lab.bewley.net; };
+};
+```
+
+* Copy key file to `/etc/dhcp/lab.bewley.net.key` for dhcpd.
+* Set `dhcpd_subnets.zone_key` to key name (_lab.bewley.net_).
+* Set `dhcpd_ddns_update_style` to _interim_.
+* Run this role.
+
 ## Role Variables
 
 These defaults values may be overriden.
@@ -28,6 +71,10 @@ Variable              | Default | Description
 `dhcpd_next_server`	| _''_	| Needed when enabling PXE. May be overridden in subnet.
 `dhcpd_pxe`	| _true_	| Enable support for PXE booting.
 `dhcpd_subnets`	| _{}_	| Dictionary of subnet definitions. See example below.
+`dhcpd_subnets.zone_key` | | Name of key file used for BIND authentication. This is the key name, not the filename. See DNS section above.
+`dhcpd_subnets.zones` | _[{}]_ | List of dictionaries defining DNS related settings for subnets.
+`dhcpd_subnets.zones[].domain` | _''_ | Domain name associated with subnet.
+`dhcpd_subnets.zones[].domain_name_server` | _''_ | Domain name server to update.
 
 ### Example `dhcpd_subnets`
 
