@@ -1,60 +1,42 @@
 ---
-# lab may already have yum repos, in that case limit to bastion group
-- hosts: all
-  gather_facts: yes
+# ocp3/tasks/prep.yml
 
-  vars:
-    ansible_ver: 2.8
+- name: Fail if openshift_release is undefined in ansible inventory
+  fail:
+    msg: "Check ansible inventory value for 'openshift_release'"
+  when: (openshift_release is not defined)
 
-    repos_disable:
-        - "*"
+# https://access.redhat.com/solutions/2472261
+- name: refresh subscription-manager
+  command: '/usr/sbin/subscription-manager refresh'
 
-    repos_enable:
-        - rhel-7-fast-datapath-rpms
-        - rhel-7-server-ansible-{{ansible_ver}}-rpms
-        - rhel-7-server-rpms
-        - rhel-7-server-extras-rpms
-        - rhel-7-server-ose-{{ openshift_release | regex_replace('^v') }}-rpms
-        #- rhel-7-server-satellite-tools-*-rpms
+- name: disable yum repo for old version
+  command: subscription-manager repos --disable "{{ item }}"
+  with_items: "{{ ocp3_repos_disable }}"
+  ignore_errors: True
 
-  tasks:
-  - name: Fail if openshift_release is undefined in ansible inventory
-    fail:
-      msg: "Check ansible inventory value for 'openshift_release'"
-    when: (openshift_release is not defined)
+- name: disable epel repo
+  command: '/usr/bin/yum-config-manager --disable "epel"'
+  ignore_errors: True
 
-  # https://access.redhat.com/solutions/2472261
-  - name: refresh subscription-manager
-    command: '/usr/sbin/subscription-manager refresh'
+- name: Enable required repos
+  command: subscription-manager repos --enable "{{ item }}"
+  with_items: "{{ ocp3_repos_enable }}"
 
-  - name: disable yum repo for old version
-    command: subscription-manager repos --disable "{{ item }}"
-    with_items: "{{ repos_disable }}"
-    ignore_errors: True
+- name: clean yum cache
+  command: 'yum clean all'
+  args:
+    warn: false
 
-  - name: disable epel repo
-    command: '/usr/bin/yum-config-manager --disable "epel"'
-    ignore_errors: True
+- name: update openshift-ansible
+  yum:
+    name: openshift-ansible
+    state: latest
+    update_cache: yes
+  when: '"bastion" in group_names'
 
-  - name: Enable required repos
-    command: subscription-manager repos --enable "{{ item }}"
-    with_items: "{{ repos_enable }}"
-
-  - name: clean yum cache
-    command: 'yum clean all'
-    args:
-      warn: false
-
-  - name: update openshift-ansible
-    yum:
-      name: openshift-ansible
-      state: latest
-      update_cache: yes
-    when: '"bastion" in group_names'
-
-  - name: Ensure we're using the correct ansible version
-    yum:
-      name: ansible
-      state: latest
-    when: '"bastion" in group_names'
-
+- name: Ensure we're using the correct ansible version
+  yum:
+    name: ansible
+    state: latest
+  when: '"bastion" in group_names'

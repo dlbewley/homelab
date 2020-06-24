@@ -1,4 +1,14 @@
 ---
+# ocp3/tasks/bastion.yml
+
+- name: setup repos etc
+  include_tasks: prep.yml
+
+- name: install packages
+  yum:
+    name: "{{ ocp3_packages_bastion }}"
+    state: installed
+
 - name: checkout homelab repo
   git:
     repo: "{{ homelab_repo }}"
@@ -20,7 +30,7 @@
 
 - name: drop a starting point inventory file
   template:
-    name: hosts.{{ ocp_env }}.j2
+    src: hosts.{{ ocp_env }}.j2
     dest: /root/hosts
 
 - name: TODO

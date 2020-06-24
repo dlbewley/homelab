@@ -4,13 +4,14 @@
 #  source <(ocp lab)
 #  ansible-playbook -i $OCP_BASTION, -u $TLC_USER rhpds-bastion.yml
 
-- hosts: all
+- hosts: bastion
   gather_facts: true
   become: true
   become_user: root
 
   vars:
-    rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    #rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
+    rhn_vars: /keybase/private/dlbewley/credz/redhat/vars.yml
     homelab_repo: https://github.com/dlbewley/homelab.git
     pull_secret: "{{ lookup('env', 'PULL_SECRET') }}"
     pull_secret_dest: "/root/.pull_secret"
