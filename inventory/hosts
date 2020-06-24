@@ -2,7 +2,13 @@
 ocp4-helper
 ocp4-helper-dual dual_homed=true
 ocp4-helper-test
+ocp4-helper-sudo
 
 [other]
-infra
 localhost
+
+[dhcpd]
+infra
+
+[pxe]
+infra

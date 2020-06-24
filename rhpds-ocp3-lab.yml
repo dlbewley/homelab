@@ -1,0 +1,25 @@
+---
+# file: rhpds-ocp3-lab.yml
+# Request ocp3 operations or ha lab
+# run rhpds-bastion.yml playbook from localhost
+# login to bastion
+# run this playbook from bastion to prep ocp3 nodes
+# ansible-playbook -i /root/hosts rhpds-ocp3-lab.yml
+
+- hosts: all,!bastion
+  become: true
+  become_user: root
+
+  vars:
+    rhn_vars: /root/vars.yml
+
+  pre_tasks:
+    - name: Include Red Hat pre tasks
+      include_tasks: tasks/RedHat-pre-tasks.yml
+      when: ansible_os_family == 'RedHat'
+
+  tasks:
+    - name: Setup ocp3 nodes
+      import_role:
+        name: ocp3
+        tasks_from: prep.yml

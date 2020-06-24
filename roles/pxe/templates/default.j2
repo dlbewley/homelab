@@ -1,0 +1,34 @@
+default vesamenu.c32
+prompt 1
+timeout 100
+
+display boot.msg
+
+menu title Kickstart or Local Boot
+
+label rhel7
+  menu label Install RHEL ^7
+  menu default
+  kernel images/rhel/7/vmlinuz
+  append initrd=images/rhel/7/initrd.img ip=dhcp inst.repo=http://{{ pxe_repo_http_server }}/dvd/rhel/7 inst.ks=http://{{ pxe_repo_http_server }}/ks/rhel7.cfg
+
+label rhel8
+  menu label Install RHEL ^8
+  kernel images/rhel/8/vmlinuz
+  append initrd=images/rhel/8/initrd.img ip=dhcp inst.repo=http://{{ pxe_repo_http_server }}/dvd/rhel/8/x86_64/
+
+label rescue7
+  menu label ^Rescue RHEL 7 installed system
+  kernel images/rhel/7/vmlinuz
+  append initrd=images/rhel/7/initrd.img rescue
+
+label rescue8
+  menu label Rescue RHEL 8 installed system
+  kernel images/rhel/8/vmlinuz
+  append initrd=images/rhel/8/initrd.img rescue
+
+menu separator
+
+label local-disk
+  menu label Boot from ^local drive
+  localboot 0xffff

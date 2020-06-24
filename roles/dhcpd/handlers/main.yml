@@ -1,0 +1,7 @@
+---
+# handlers file for dhcpd
+
+- name: restart dhcpd
+  service:
+    name: dhcpd
+    state: restarted

@@ -1,0 +1,83 @@
+---
+# file: pxe/tasks/main.yml
+
+- name: Install Packages
+  yum:
+    name: "{{ pxe_packages }}"
+    state: installed
+
+- name: Setup tftpboot directories
+  file:
+    path: "{{ pxe_tftpboot }}/{{ item }}"
+    state: directory
+    mode: 0755
+    recurse: true
+  loop:
+    - boot/grub2
+    - images/centos
+    - images/fedora
+    - images/ocp/4
+    - images/rhcos
+    - images/rhel/7
+    - images/rhel/8
+    - pxelinux.cfg
+    - uefi
+
+- name: Enumerate syslinux files
+  find:
+    path: "/usr/share/syslinux"
+  register: syslinux_files
+  when: pxe_copy_syslinux
+
+- name: Copy syslinux files to tftpboot
+  copy:
+    src: "{{ item.path }}"
+    dest: "{{ pxe_tftpboot }}/"
+    mode: 0644
+    remote_src: true
+  loop: "{{ syslinux_files.files }}"
+  when: pxe_copy_syslinux
+
+- name: Copy UEFI images to tftpboot
+  copy:
+    src: "/boot/efi/EFI/redhat/{{ item }}"
+    dest: "{{ pxe_tftpboot }}/uefi/{{ item }}"
+    mode: 0644
+    remote_src: true
+  loop:
+    - shimx64.efi
+    - grubx64.efi
+
+- name: Create but netdir
+  command: grub2-mknetdir --net-directory=/var/lib/tftpboot
+  args:
+    creates: "{{ pxe_tftpboot }}/boot/grub2/i386-pc"
+
+- name: Install boot.msg
+  template:
+    src: boot.msg.j2
+    dest: "{{ pxe_tftpboot }}/boot.msg"
+    mode: 0644
+
+- name: Install default pxe config
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ pxe_tftpboot }}/pxelinux.cfg/{{ item }}"
+    mode: 0644
+  loop:
+    - default
+    - local-disk
+
+- name: Enable Services
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop: "{{ pxe_services }}"
+
+- name: Open Firewall
+  firewalld:
+    service: "{{ item }}"
+    state: enabled
+    permanent: yes
+  loop: "{{ pxe_firewall_services }}"

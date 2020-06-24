@@ -1,2 +1,17 @@
 ---
 # defaults file for ocp3
+ocp3_ansible_ver: 2.8
+
+ocp3_repos_disable:
+    - "*"
+
+ocp3_repos_enable:
+    - rhel-7-fast-datapath-rpms
+    - rhel-7-server-ansible-{{ ocp3_ansible_ver }}-rpms
+    - rhel-7-server-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-ose-{{ openshift_release | regex_replace('^v') }}-rpms
+    #- rhel-7-server-satellite-tools-*-rpms
+
+ocp3_packages_bastion:
+    - git
