@@ -43,6 +43,8 @@ rhn_pool_ids:
 
 == Roles
 
-* link:roles/ocp3/[] - Configure ocp3 lab
+* link:roles/dhcpd/[] - Configure lab dhcpd server
+* link:roles/pxe/[] - Configure lab PXE server
+* link:roles/ocp3/[] - Configure ocp3 lab starting with the link:roles/ocp3/tasks/bastion.yml[]
 
 == OpenShift
