@@ -275,14 +275,14 @@ ocp3-master-02.lab.bewley.net openshift_node_group_name='node-config-master' ope
 ocp3-master-03.lab.bewley.net openshift_node_group_name='node-config-master' openshift_node_problem_detector_install=true
 
 ## These are infranodes
-#infranode1.{{guid}}.internal openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
-#infranode2.{{guid}}.internal openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
+ocp3-node-01.lab.bewley.net openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
+ocp3-node-02.lab.bewley.net openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
+ocp3-node-03.lab.bewley.net openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
 
 ## These are regular nodes
-ocp3-node-01.lab.bewley.net openshift_node_group_name='node-config-infra'   openshift_node_problem_detector_install=true
-ocp3-node-02.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
-ocp3-node-03.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
-
+ocp3-node-04.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
+ocp3-node-05.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
+ocp3-node-06.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
 
 #[nfs]
 #support1.{{guid}}.internal

@@ -10,12 +10,7 @@ ocp3-bastion.lab.bewley.net openshift_release=3.11
 [ocp3]
 ocp3-bastion.lab.bewley.net
 ocp3-master-[01:03].lab.bewley.net
-ocp3-node-[01:03].lab.bewley.net
-
-[ocp3:vars]
-ocp3_nfs_host=freenas.home.bewley.net
-ocp3_nfs_directory=/mnt/Vol1/ocp/ocp3
-ocp3_router_replicas=1
+ocp3-node-[01:06].lab.bewley.net
 
 [other]
 localhost
