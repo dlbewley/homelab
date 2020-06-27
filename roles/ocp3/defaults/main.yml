@@ -15,3 +15,7 @@ ocp3_repos_enable:
 
 ocp3_packages_bastion:
     - git
+
+ocp3_nfs_host: freenas
+ocp3_nfs_directory: /mnt/Vol1/ocp/ocp3
+ocp3_router_replicas: 1

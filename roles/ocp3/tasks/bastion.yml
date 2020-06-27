@@ -35,4 +35,9 @@
 
 - name: TODO
   debug:
-    msg: Update oreg auth in /root/hosts
+    msg: Update oreg_auth_password and oreg_auth_user in /root/hosts with pull secret
+
+- name: TODO
+  debug:
+    msg: Generate bastion ssh key, add to authorized_keys on nodes
+
