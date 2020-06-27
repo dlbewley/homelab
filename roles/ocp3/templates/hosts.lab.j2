@@ -211,19 +211,19 @@ openshift_logging_eventrouter_nodeselector=
 # openshift_router_selector='node-role.kubernetes.io/infra=true'
 # openshift_registry_selector='node-role.kubernetes.io/infra=true'
 
-openshift_hosted_router_replicas=1
+openshift_hosted_router_replicas={{ ocp3_router_replicas | default(1) }}
 
 # openshift_hosted_router_certificate={"certfile": "/path/to/router.crt", "keyfile": "/path/to/router.key", "cafile": "/path/to/router-ca.crt"}
 
-openshift_hosted_registry_replicas=1
+openshift_hosted_registry_replicas={{ ocp3_registry_replicas | default(1) }}
 openshift_hosted_registry_pullthrough=true
 openshift_hosted_registry_acceptschema2=true
 openshift_hosted_registry_enforcequota=true
 
 openshift_hosted_registry_storage_kind=nfs
 openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-openshift_hosted_registry_storage_host={{ ocp3_nfs_host }}
-openshift_hosted_registry_storage_nfs_directory={{ ocp3_nfs_directory }}
+openshift_hosted_registry_storage_host={{ ocp3_nfs_host | default('') }}
+openshift_hosted_registry_storage_nfs_directory={{ ocp3_nfs_directory | default('/export')}}
 openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
 openshift_hosted_registry_storage_volume_name=registry
 openshift_hosted_registry_storage_volume_size=20Gi
