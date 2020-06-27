@@ -45,7 +45,6 @@ logrotate_scripts=[{"name": "syslog", "path": "/var/log/cron\n/var/log/maillog\n
 # Deploy Operator Lifecycle Manager Tech Preview
 openshift_enable_olm=
 
-openshift_enable_unsupported_configurations=true
 
 ###########################################################################
 ### OpenShift Registries Locations
@@ -64,7 +63,7 @@ openshift_examples_modify_imagestreams=
 
 
 # Set this line to enable NFS
-openshift_enable_unsupported_configurations=
+openshift_enable_unsupported_configurations=True
 
 ###########################################################################
 ### OpenShift Master Vars
@@ -129,14 +128,15 @@ openshift_cluster_monitoring_operator_install=
 # Cluster Metrics
 ########################
 
-openshift_metrics_install_metrics=
+openshift_metrics_install_metrics=false
 
-openshift_metrics_storage_kind=
-openshift_metrics_storage_access_modes=
-openshift_metrics_storage_nfs_directory=
-openshift_metrics_storage_nfs_options=
-openshift_metrics_storage_volume_name=
-openshift_metrics_storage_volume_size=
+openshift_metrics_storage_kind=nfs
+openshift_metrics_storage_access_modes=['ReadWriteMany']
+openshift_metrics_storage_host={{ ocp3_nfs_host }}
+openshift_metrics_storage_nfs_directory={{ ocp3_nfs_directory }}
+openshift_metrics_storage_nfs_options='*(rw,root_squash)'
+openshift_metrics_storage_volume_name=metrics
+openshift_metrics_storage_volume_size=10Gi
 openshift_metrics_storage_labels=
 openshift_metrics_cassandra_pvc_storage_class_name=
 
@@ -177,7 +177,7 @@ openshift_grafana_node_exporter=
 # Cluster Logging
 ########################
 
-openshift_logging_install_logging=
+openshift_logging_install_logging=false
 openshift_logging_install_eventrouter=
 
 
@@ -211,7 +211,7 @@ openshift_logging_eventrouter_nodeselector=
 # openshift_router_selector='node-role.kubernetes.io/infra=true'
 # openshift_registry_selector='node-role.kubernetes.io/infra=true'
 
-openshift_hosted_router_replicas=
+openshift_hosted_router_replicas=1
 
 # openshift_hosted_router_certificate={"certfile": "/path/to/router.crt", "keyfile": "/path/to/router.key", "cafile": "/path/to/router-ca.crt"}
 
@@ -220,13 +220,14 @@ openshift_hosted_registry_pullthrough=true
 openshift_hosted_registry_acceptschema2=true
 openshift_hosted_registry_enforcequota=true
 
-
 openshift_hosted_registry_storage_kind=nfs
 openshift_hosted_registry_storage_access_modes=['ReadWriteMany']
-openshift_hosted_registry_storage_nfs_directory=/srv/nfs
+openshift_hosted_registry_storage_host={{ ocp3_nfs_host }}
+openshift_hosted_registry_storage_nfs_directory={{ ocp3_nfs_directory }}
 openshift_hosted_registry_storage_nfs_options='*(rw,root_squash)'
 openshift_hosted_registry_storage_volume_name=registry
 openshift_hosted_registry_storage_volume_size=20Gi
+
 # this should pull from the [nfs] group actually
 #openshift_hosted_registry_storage_host=support1.{{guid}}.internal
 
@@ -256,7 +257,7 @@ lb
 masters
 etcd
 nodes
-nfs
+#nfs
 
 [lb]
 ocp3-lb.lab.bewley.net
@@ -278,10 +279,10 @@ ocp3-master-03.lab.bewley.net openshift_node_group_name='node-config-master' ope
 #infranode2.{{guid}}.internal openshift_node_group_name='node-config-infra' openshift_node_problem_detector_install=true
 
 ## These are regular nodes
-ocp3-node-01.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
+ocp3-node-01.lab.bewley.net openshift_node_group_name='node-config-infra'   openshift_node_problem_detector_install=true
 ocp3-node-02.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
 ocp3-node-03.lab.bewley.net openshift_node_group_name='node-config-compute' openshift_node_problem_detector_install=true
 
 
-[nfs]
+#[nfs]
 #support1.{{guid}}.internal
