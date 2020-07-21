@@ -18,5 +18,8 @@ localhost
 [dhcpd]
 infra
 
+[proxy]
+infra
+
 [pxe]
 infra

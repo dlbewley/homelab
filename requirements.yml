@@ -1,3 +1,4 @@
 ---
 roles:
   - name: RedHatInsights.insights-client
+  - name: mrlesmithjr.squid

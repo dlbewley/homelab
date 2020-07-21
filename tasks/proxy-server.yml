@@ -1,0 +1,18 @@
+---
+# file: tasks/proxy-server.yml
+
+- name: generate squid client password
+  command: "openssl rand -base64 32"
+  register: openssl_cmd
+  when: squid_client_password is not defined
+
+- name: set password var
+  set_fact:
+    squid_client_password: openssl_cmd.stdout
+  when: openssl_cmd is changed
+    
+- name: create squid htpasswd if not present
+  command: "htpasswd -b -c {{ squid_htpasswd }} {{ squid_client_username }} {{ squid_client_password }}"
+  args: 
+    creates: "{{ squid_htpasswd }}"
+  notify: restart squid
