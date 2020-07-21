@@ -1,0 +1,19 @@
+---
+# file: group_vars/proxy.yml
+squid_bin_dir: /usr/lib64/squid
+squid_htpasswd: "{{ squid_root_dir }}/htpasswd"
+squid_client_username: proxyuser
+
+# consider locking to an int
+#squid_http_port: 192.168.4.2:3128
+
+squid_auth_param:
+  - name: basic
+    type: program
+    arg: "{{ squid_bin_dir }}/basic_ncsa_auth {{ squid_htpasswd }}"
+  - name: basic
+    type: realm
+    arg: Authentication REQUIRED
+
+squid_acl_localnet:
+  - 192.168.4.0/24

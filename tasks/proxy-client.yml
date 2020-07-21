@@ -1,0 +1,8 @@
+---
+# file: tasks/proxy-client.yml
+
+- name: store http proxy environment settings
+  file:
+    name: /etc/profile.d/http_proxy.sh
+    content: "export http_proxy=http://{{ squid_client_username }}:{{ squid_client_password }}@{{ squid_proxy_server }}/"
+  when: '"proxy_client" in group_names or proxy_client is true'

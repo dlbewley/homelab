@@ -11,8 +11,10 @@
       - bind-chroot
       - git
       - nfs-utils
+      - squid
     firewall_services:
       - http
+      - squid
     # disable this slow step for now.
     # enable if /usr/share/syslniux changes
     pxe_copy_syslinux: false
@@ -32,6 +34,10 @@
        when: ansible_os_family == 'RedHat'
        tags: [ registration ]
 
+     - role: mrlesmithjr.squid
+       when: '"proxy" in group_names'
+       tags: [ proxy ]
+
      - role: dhcpd
        when: '"dhcpd" in group_names'
        tags: [ dhcpd ]
@@ -40,9 +46,9 @@
        when: '"pxe" in group_names'
        tags: [ pxe ]
 
-     - role: named
-       when: '"named" in group_names'
-       tags: [ named ]
+    #  - role: named
+    #    when: '"named" in group_names'
+    #    tags: [ named ]
 
   tasks:
       - name: install packages
@@ -50,9 +56,17 @@
           name: "{{ packages }}"
           state: present
 
+      - name: setup proxy server
+        import_tasks: tasks/proxy-server.yml
+        when: '"proxy" in group_names'
+        tags: [ proxy ]
+
       - name: open firewall
         firewalld:
           service: "{{ item }}"
           state: enabled
           permanent: yes
         loop: "{{ firewall_services }}"
+        tags:
+          - proxy
+          - pxe
