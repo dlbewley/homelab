@@ -3,6 +3,8 @@
 
 = Configure Squid HTTP Proxy With SSL Bump
 
+* https://wiki.squid-cache.org/ConfigExamples/Intercept/SslBumpExplicit
+
 == Create CA Cert for Squid
 
 === Create OpenSSL Config
