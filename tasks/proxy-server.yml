@@ -16,3 +16,34 @@
   args: 
     creates: "{{ squid_htpasswd }}"
   notify: restart squid
+
+- name: setup squid CA dirs
+  file:
+    path: {{ item }}
+    state: directory
+    owner: squid
+    group: squid
+    mode: 0770
+  when: squid_ssl_bump
+  with:
+    - {{ squid_ca_dir }}
+    - {{ squid_ssl_db_dir }}
+
+- name: install CA openssl config
+  template:
+    src: squid-openssl.cnf.j2
+    dest: {{squid_ca_dir}}/openssl.cnf
+  when: squid_ssl_bump
+
+- name: create ssl cert db
+  become: squid
+  command:
+    cmd: {{ squid_bin_dir }}/security_file_certgen -c  -s {{ squid_ssl_db_dir }} -M 4MB
+    creates: {{ squid_ssl_db_dir }}/index.txt
+  when: squid_ssl_bump
+  register: ssl_db
+
+- name: fix up create ssl cert db
+  command:
+    cmd: restorecon -vR {{ squid_ssl_db_dir }}
+  when:  squid_ssl_bump and ssl_db is changed

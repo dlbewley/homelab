@@ -3,6 +3,8 @@
 squid_bin_dir: /usr/lib64/squid
 squid_htpasswd: "{{ squid_root_dir }}/htpasswd"
 squid_client_username: proxyuser
+squid_ca_dir: /etc/squid/CA
+squid_ssl_bump: true
 
 # consider locking to an int
 #squid_http_port: 192.168.4.2:3128
