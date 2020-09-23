@@ -4,7 +4,7 @@ squid_bin_dir: /usr/lib64/squid
 squid_htpasswd: "{{ squid_root_dir }}/htpasswd"
 squid_client_username: proxyuser
 squid_ca_dir: /etc/squid/CA
-squid_ssl_bump: true
+squid_ssl_db_dir: /var/lib/ssl_db
 
 # consider locking to an int
 #squid_http_port: 192.168.4.2:3128
@@ -18,4 +18,28 @@ squid_auth_param:
     arg: Authentication REQUIRED
 
 squid_acl_localnet:
+  - 192.168.1.0/24
+  - 192.168.3.0/24
   - 192.168.4.0/24
+  - 192.168.5.0/24
+  - 192.168.6.0/24
+
+squid_acl_safeports:
+  - port: 80
+    comment: http
+  - port: 443
+    comment: https
+  - port: 488
+    comment: gss-http
+  - port: 777
+    comment: multiling http
+  - port: 1025-65535
+    comment: unregistered ports
+
+squid_ssl_bump:
+  - action: peek
+    acl:
+      - step1
+  - action: bump
+    acl:
+      - all
