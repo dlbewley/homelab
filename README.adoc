@@ -38,7 +38,7 @@ rhn_pool_ids:
 == Playbooks
 
 * link:mkhelper.yml[] - Playbook to build VMware VM and prep OS for munging by https://github.com/RedHatOfficial/ocp4-helpernode[RedHatOfficial / ocp4-helpernode] Playbook prior to contributing back to same
-* link:infra.yml[] - WIP Playbook for a persistent Infrastructure host.
+* link:infra.yml[] - Playbook for a persistent Infrastructure host with a fancy Squid MITM explite and transparent proxy.
 * link:rhpds-bastion.yml[] - Prep a Red Hat Product Demo System bastion host for use.
 
 == Roles
@@ -48,3 +48,55 @@ rhn_pool_ids:
 * link:roles/ocp3/[] - Configure ocp3 lab starting with the link:roles/ocp3/tasks/bastion.yml[]
 
 == OpenShift
+
+=== Lab DNS Setup
+
+For each cluster add DNS records for VIPs needed by vSphere IPI install method.
+See also https://github.com/dlbewley/homelab/tree/master/roles/dhcpd
+
+* Edit dynamic DNS zone by freezing it
+
+[source,bash]
+----
+$ ssh root@infra
+$ cd /var/named/chroot
+$ rndc -k etc/rndc.key freeze lab.bewley.net
+$ rndc -k etc/rndc.key freeze 5.168.192.in-addr.arpa
+----
+
+* Add `A` for VIPs in top level zone and use `CNAME`s for cluster domain names.
+
+./var/named/chroot/var/named/internal/db.lab.bewley.net
+[source,bash]
+----
+$ORIGIN lab.bewley.net.
+vtprxy-lb-api           A       192.168.5.13
+vtprxy-lb-apps          A       192.168.5.12
+$ORIGIN vtprxy.lab.bewley.net.
+api                     CNAME   vtprxy-lb-api.lab.bewley.net.
+$ORIGIN apps.vtprxy.lab.bewley.net.
+*                       CNAME   vtprxy-lb-apps.lab.bewley.net.
+----
+
+./var/named/chroot/var/named/internal/db.192.168.5.in-addr.arpa
+[source,bash]
+----
+$ORIGIN 5.168.192.in-addr.arpa.
+1                       PTR     gw.lab.bewley.net.
+2                       PTR     infra.lab.bewley.net.
+12                      PTR     vtprxy-lb-apps.lab.bewley.net.
+13                      PTR     vtprxy-lb-api.lab.bewley.net.
+----
+
+* Thaw zones and check results for errors
+
+[source,bash]
+----
+$ rndc -k etc/rndc.key unfreeze lab.bewley.net
+$ rndc -k etc/rndc.key unfreeze 5.168.192.in-addr.arpa
+$ systemctl status named-chroot
+$ host vtprxy-lb-api.lab.bewley.net
+vtprxy-lb-api.lab.bewley.net has address 192.168.5.13
+$ host 192.168.5.13
+13.5.168.192.in-addr.arpa domain name pointer vtprxy-lb-api.lab.bewley.net.
+----
