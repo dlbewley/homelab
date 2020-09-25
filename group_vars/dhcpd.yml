@@ -8,7 +8,7 @@ dhcpd_ddns_update_style: interim
 
 dhcpd_subnets:
   - name: lab4
-    description: Lab Network lab.bewley.net
+    description: Lab4 Network lab.bewley.net
     network: 192.168.4.0
     netmask: 255.255.255.0
     range_start: 192.168.4.10
@@ -22,5 +22,39 @@ dhcpd_subnets:
       - domain: lab.bewley.net
         domain_name_server: 192.168.1.177
       - domain: 4.168.192.in-addr.arpa
+        domain_name_server: 192.168.1.177
+
+  - name: lab5
+    description: Lab5 Network lab.bewley.net
+    network: 192.168.5.0
+    netmask: 255.255.255.0
+    range_start: 192.168.5.10
+    range_end: 192.168.5.199
+    routers: 192.168.5.2
+    next_server: 192.168.5.2
+    domain_name_servers:
+      - 192.168.5.2
+    zone_key: lab.bewley.net
+    zones:
+      - domain: lab.bewley.net
+        domain_name_server: 192.168.1.177
+      - domain: 5.168.192.in-addr.arpa
+        domain_name_server: 192.168.1.177
+
+  - name: disco
+    description: Disco Lab6 Network disco.bewley.net
+    network: 192.168.6.0
+    netmask: 255.255.255.0
+    range_start: 192.168.6.10
+    range_end: 192.168.6.199
+    routers: 192.168.6.2
+    next_server: 192.168.6.2
+    domain_name_servers:
+      - 192.168.6.2
+    zone_key: disco.bewley.net
+    zones:
+      - domain: disco.bewley.net
+        domain_name_server: 192.168.1.177
+      - domain: 6.168.192.in-addr.arpa
         domain_name_server: 192.168.1.177
 
