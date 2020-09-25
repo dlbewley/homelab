@@ -1,5 +1,5 @@
 :toc:
-:toc:[]
+:toc: []
 
 = Configure Squid HTTP Proxy With SSL Bump
 
