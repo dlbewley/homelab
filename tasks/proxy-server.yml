@@ -29,26 +29,24 @@
         state: absent
       when: squid_ssl_cert_reset is defined and squid_ssl_cert_reset
 
-    - name: install CA openssl config
-      template:
-        src: squid-openssl.cnf.j2
-        dest: "{{squid_ca_dir}}/openssl.cnf"
+    - name: setup CA for squid
+      include_tasks: proxy-server-ca.yml
 
-    - name: create ssl cert db
+    - name: create MITM cert db
       shell:
         cmd: "{{ squid_bin_dir }}/security_file_certgen -c -s {{ squid_ssl_db_dir }} -M {{ squid_ssl_cert_cache_size }}"
         creates: "{{ squid_ssl_db_dir }}/index.txt"
       register: ssl_db
 
-    - name: fixup squid CA dirs
+    - name: fixup MITM cert dirs
       file:
         path: "{{ item }}"
         state: directory
         owner: squid
         group: squid
         mode: 0770
+        setype: squid_conf_t
       loop:
-        - "{{ squid_ca_dir }}"
         - "{{ squid_ssl_db_dir }}"
         - "{{ squid_ssl_db_dir }}/certs"
 
@@ -63,7 +61,7 @@
         - "{{ squid_ssl_db_dir }}/index.txt"
         - "{{ squid_ssl_db_dir }}/size"
 
-    - name: fix up create ssl cert db
+    - name: fix up ssl cert db dir
       command:
         cmd: restorecon -vR {{ squid_ssl_db_dir }}
       when:

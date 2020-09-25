@@ -11,7 +11,7 @@ squid_ssl_cert_cache_size: 4MB
 #squid_http_port: 192.168.4.2:3128
 
 # remove all existing certs
-squid_ssl_cert_reset: True
+squid_ssl_cert_reset: False
 
 # sidestep role var
 squid_trans_proxy:

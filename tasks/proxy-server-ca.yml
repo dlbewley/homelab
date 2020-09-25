@@ -1,0 +1,84 @@
+---
+# https://www.phildev.net/ssl/creating_ca.html
+- name: create CA dirs
+  file:
+    path: "{{ item }}"
+    owner: squid
+    group: squid
+    mode: 0700
+    setype: squid_conf_t
+    state: directory
+  loop:
+    - "{{ squid_cert_dir }}"
+    - "{{ squid_ca_dir }}"
+    - "{{ squid_ca_dir }}/certsdb"
+    - "{{ squid_ca_dir }}/certreqs"
+    - "{{ squid_ca_dir }}/crl"
+    - "{{ squid_ca_dir }}/private"
+
+# cp -p /etc/pki/tls/openssl.cnf CA
+# compare template below to above default for details
+- name: install CA openssl config
+  template:
+    src: squid-openssl.cnf.j2
+    dest: "{{squid_ca_dir}}/openssl.cnf"
+
+- name: create index
+  file:
+    path: "{{ squid_ca_dir }}/index.txt"
+    state: file
+    owner: squid
+    group: squid
+    mode: 0700
+    setype: squid_conf_t
+
+# openssl req \
+#     -new \
+#     -newkey rsa:2048 \
+#     -days 365 \
+#     -sha256 \
+#     -nodes -x509 \
+#     -keyout {{ squid_ca_dir }}/private/cakey.pem \
+#     -out {{ squid_ca_dir }}/careq.pem \
+#     -config {{ squid_ca_dir }}/openssl.cnf
+
+# # create CSR
+# openssl req \
+#         -new \
+#         -newkey rsa:2048 \
+#         -keyout {{ squid_ca_dir }}private/cakey.pem \
+#         -out {{ squid_ca_dir }}/careq.pem \
+#         -config {{ squid_ca_dir }}/openssl.cnf
+
+# # create self-signed CA
+# openssl ca \
+#         -create_serial \
+#         -out cacert.pem \
+#         -days 365 \
+#         -keyfile {{ squid_ca_dir }}/private/cakey.pem \
+#         -selfsign \
+#         -extensions v3_ca_has_san \
+#         -config {{ squid_ca_dir }}/openssl.cnf \
+#         -infiles careq.pem
+
+# # strip password from cert
+# openssl rsa \
+#         -in {{ squid_ca_dir }}/private/cakey.pem \
+#         -out {{ squid_ca_dir }}/private/cakey-decrypted.pem
+
+# # combine decrypted key and cert in PEM format
+# cat {{ squid_ca_dir }}/private/cakey-decrypted.pem  \
+#     {{ squid_cat_dir }}/newcerts/6F3756B110C445A8F889CB67CBDC896D22273438.pem \
+#     > {{ squid_ca_dir }}/myCA.pem
+
+# # copy cert for trust bundle in PEM
+# openssl x509 -in {{ squid_cat_dir }}/newcerts/6F3756B110C445A8F889CB67CBDC896D22273438.pem \
+#         -out {{ squid_cert_dir }}/myCA.crt
+
+# # copy cert for trust bundle in Der
+# # distribute PEM or Der to squid and MITM victims
+# cp -p {{ squid_ca_dir}}/myCA.pem {{ squid_cert_dir }}/
+# openssl x509 \
+#         -in {{ squid_cert_dir }}/myCA.pem \
+#         -outform DER \
+#         -out {{ squid_cert_dir }}/myCA.der
