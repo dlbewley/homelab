@@ -5,9 +5,20 @@ squid_htpasswd: "{{ squid_root_dir }}/htpasswd"
 squid_client_username: proxyuser
 squid_ca_dir: /etc/squid/CA
 squid_ssl_db_dir: /var/lib/ssl_db
+squid_ssl_cert_cache_size: 4MB
 
 # consider locking to an int
 #squid_http_port: 192.168.4.2:3128
+
+# remove all existing certs
+squid_ssl_cert_reset: True
+
+# sidestep role var
+squid_trans_proxy:
+  enabled: True
+  http_port: 3129
+  https_port: 3130
+  fw_zone: lab5
 
 squid_auth_param:
   - name: basic
@@ -20,8 +31,11 @@ squid_auth_param:
 squid_acl_localnet:
   - 192.168.1.0/24
   - 192.168.3.0/24
+  # lab proxy
   - 192.168.4.0/24
+  # lab5 trans proxy
   - 192.168.5.0/24
+  # disco disconnected
   - 192.168.6.0/24
 
 squid_acl_safeports:
@@ -43,3 +57,7 @@ squid_ssl_bump:
   - action: bump
     acl:
       - all
+
+# http_port 3128 ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size=4MB
+# sslcrtd_program /usr/lib64/squid/security_file_certgen -s /var/lib/ssl_db -M 4MB
+# tls_outgoing_options cafile=/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt cipher=HIGH:MEDIUM:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS
