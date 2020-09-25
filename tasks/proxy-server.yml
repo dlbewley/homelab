@@ -10,40 +10,140 @@
   set_fact:
     squid_client_password: openssl_cmd.stdout
   when: openssl_cmd is changed
-    
+
 - name: create squid htpasswd if not present
   command: "htpasswd -b -c {{ squid_htpasswd }} {{ squid_client_username }} {{ squid_client_password }}"
   args: 
     creates: "{{ squid_htpasswd }}"
   notify: restart squid
 
-- name: setup squid CA dirs
-  file:
-    path: {{ item }}
-    state: directory
-    owner: squid
-    group: squid
-    mode: 0770
-  when: squid_ssl_bump
-  with:
-    - {{ squid_ca_dir }}
-    - {{ squid_ssl_db_dir }}
+# mrlesmithjr.squid role does not quite do it yet
+- name: setup ssl bump proxy
+  when:
+    - squid_ssl_bump is defined
+    - squid_ssl_bump != []
+  block:
+    - name: remove any existing certs
+      file:
+        path: "{{ squid_ssl_db_dir }}"
+        state: absent
+      when: squid_ssl_cert_reset is defined and squid_ssl_cert_reset
 
-- name: install CA openssl config
-  template:
-    src: squid-openssl.cnf.j2
-    dest: {{squid_ca_dir}}/openssl.cnf
-  when: squid_ssl_bump
+    - name: install CA openssl config
+      template:
+        src: squid-openssl.cnf.j2
+        dest: "{{squid_ca_dir}}/openssl.cnf"
 
-- name: create ssl cert db
-  become: squid
-  command:
-    cmd: {{ squid_bin_dir }}/security_file_certgen -c  -s {{ squid_ssl_db_dir }} -M 4MB
-    creates: {{ squid_ssl_db_dir }}/index.txt
-  when: squid_ssl_bump
-  register: ssl_db
+    - name: create ssl cert db
+      shell:
+        cmd: "{{ squid_bin_dir }}/security_file_certgen -c -s {{ squid_ssl_db_dir }} -M {{ squid_ssl_cert_cache_size }}"
+        creates: "{{ squid_ssl_db_dir }}/index.txt"
+      register: ssl_db
 
-- name: fix up create ssl cert db
-  command:
-    cmd: restorecon -vR {{ squid_ssl_db_dir }}
-  when:  squid_ssl_bump and ssl_db is changed
+    - name: fixup squid CA dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: squid
+        group: squid
+        mode: 0770
+      loop:
+        - "{{ squid_ca_dir }}"
+        - "{{ squid_ssl_db_dir }}"
+        - "{{ squid_ssl_db_dir }}/certs"
+
+    - name: fixup squid CA files
+      file:
+        path: "{{ item }}"
+        state: file
+        owner: squid
+        group: squid
+        mode: 0660
+      loop:
+        - "{{ squid_ssl_db_dir }}/index.txt"
+        - "{{ squid_ssl_db_dir }}/size"
+
+    - name: fix up create ssl cert db
+      command:
+        cmd: restorecon -vR {{ squid_ssl_db_dir }}
+      when:
+        - ssl_db is changed
+
+    - name: add ssl_bump MITM explicit proxy
+      lineinfile:
+        backup: yes
+        path: /etc/squid/squid.conf
+        regexp: "^http_port {{ squid_http_port }}"
+        line: http_port {{ squid_http_port }} ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size={{ squid_ssl_cert_cache_size }}
+      notify: "restart {{ squid_service }}"
+
+    - name: add ssl_bump MITM HTTP transparent proxy
+      lineinfile:
+        backup: yes
+        path: /etc/squid/squid.conf
+        regexp: "^http_port {{ squid_trans_proxy.http_port }}"
+        line: "http_port {{ squid_trans_proxy.http_port }} intercept ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size={{ squid_ssl_cert_cache_size }}"
+        insertafter: "^http_port {{ squid_http_port }}"
+      notify: "restart {{ squid_service }}"
+      when:
+        - squid_trans_proxy.enabled | default(False)
+
+    - name: add ssl_bump MITM HTTPS transparent proxy
+      lineinfile:
+        backup: yes
+        path: /etc/squid/squid.conf
+        regexp: "^https_port {{ squid_trans_proxy.https_port }}"
+        line: "https_port {{ squid_trans_proxy.https_port }} intercept ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size={{ squid_ssl_cert_cache_size }}"
+        insertafter: "^http_port {{ squid_http_port }}"
+      notify: "restart {{ squid_service }}"
+      when:
+        - squid_trans_proxy.enabled | default(False)
+
+    - name: redirect web traffic to transparent proxy
+      firewalld:
+        rich_rule: "rule family=ipv4 forward-port port={{ item.port }} protocol=tcp to-port={{ item.proxy_port }}"
+        zone: "{{ squid_trans_proxy.fw_zone }}"
+        permanent: yes
+        immediate: yes
+        state: enabled
+      loop:
+        - { 'port': 80, 'proxy_port': "{{ squid_trans_proxy.http_port }}" }
+        - { 'port': 443, 'proxy_port': "{{ squid_trans_proxy.https_port }}" }
+        - { 'port': 6443, 'proxy_port': "{{ squid_trans_proxy.https_port }}" }
+        - { 'port': 8443, 'proxy_port': "{{ squid_trans_proxy.https_port }}" }
+      when:
+        - squid_trans_proxy.enabled | default(False)
+
+    - name: add more ssl bump settings
+      blockinfile:
+        backup: yes
+        path: /etc/squid/squid.conf
+        marker: "# {mark} SSL Bump"
+        insertbefore: "^http_port {{ squid_http_port }}"
+        block: |
+          acl step1 at_step SslBump1
+          ssl_bump peek step1
+          ssl_bump bump all
+          sslcrtd_program {{ squid_bin_dir }}/security_file_certgen -s {{ squid_ssl_db_dir }} -M {{ squid_ssl_cert_cache_size }}
+          tls_outgoing_options cafile=/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt cipher=HIGH:MEDIUM:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS
+      notify: "restart {{ squid_service }}"
+
+    - name: open firewall
+      firewalld:
+        port: "{{ item }}/tcp"
+        state: enabled
+        permanent: yes
+        zone: "{{ squid_trans_proxy.fw_zone }}"
+      loop: 
+        - "{{ squid_trans_proxy.http_port }}"
+        - "{{ squid_trans_proxy.https_port }}"
+      when:
+        - squid_trans_proxy.enabled | default(False)
+
+# acl intermediate_fetching transaction_initiator certificate-fetching
+# http_access allow intermediate_fetching
+# http_port 3128 tcpkeepalive=60,30,3 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=20MB tls-cert=/etc/squid/bump.crt tls-key=/etc/squid/bump.key cipher=HIGH:MEDIUM:!LOW:!RC4:!SEED:!IDEA:!3DES:!MD5:!EXP:!PSK:!DSS options=NO_TLSv1,NO_SSLv3,SINGLE_DH_USE,SINGLE_ECDH_USE tls-dh=prime256v1:/etc/squid/bump_dhparam.pem
+
+# http_port 3128 ssl-bump cert=/etc/squid/ssl_cert/myCA.pem generate-host-certificates=on dynamic_cert_mem_cache_size=4MB
+# sslcrtd_program /usr/lib64/squid/security_file_certgen -s /var/lib/ssl_db -M 4MB
+# tls_outgoing_options cafile=/etc/pki/ca-trust/extracted/openssl/ca-bundle.trust.crt cipher=HIGH:MEDIUM:!RC4:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS
