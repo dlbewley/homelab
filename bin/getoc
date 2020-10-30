@@ -2,8 +2,8 @@
 # Download oc clients from mirror
 
 VERSIONS="4.2 4.3 4.4 4.5 4.6 latest nightly"
-CLIENT_VERSIONS="4.4 4.5"
-INSTALLER_VERSIONS="4.4 4.5"
+CLIENT_VERSIONS="4.5 4.6"
+INSTALLER_VERSIONS="4.5 4.6"
 HELM_VERSIONS="latest"
 PLATFORMS="linux macosx" # windows"
 INSTALL_DIR="$HOME/bin"
