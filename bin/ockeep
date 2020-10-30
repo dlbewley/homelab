@@ -1,0 +1,42 @@
+#!/bin/bash
+################################################################################
+# ocpkeep - securely keep the credentials from new cluster install
+#-------------------------------------------------------------------------------
+# Given a cluster install dir, copy the generated kubeconfig and kubeadmin
+# password to keybase where it can be referenced by the 'ocp' script.
+################################################################################
+
+if [ -z "$CLUSTER_DIR" ]; then
+    echo "Please provide a \$CLUSTER_DIR pointing to installation directory."
+    echo "The cluster name must match the final component of this path."
+    exit 1
+fi
+
+CLUSTER_NAME=$(echo $CLUSTER_DIR | awk -F/ '{print $NF}')
+
+if [ $(uname) == 'Darwin' ]; then
+    keybase_mnt=/Volumes/Keybase
+else
+    keybase_mnt=/keybase
+fi
+
+keybase_user=$(keybase config get -b current_user)
+base_dir=${keybase_mnt}/private/${keybase_user}/credz/ocp
+STORE="${base_dir}/${CLUSTER_NAME}"
+
+if [ ! -d "$STORE" ]; then
+    echo "Creating credential store dir $STORE"
+    mkdir -p $STORE
+fi
+
+for f in kubeconfig kubeadmin-password; do
+    if [ -f "$STORE/$f" ]; then
+        echo "Backing up existing $STORE/$f"
+        mv $STORE/$f{,.$(date +%Y%m%d-%H%M)}
+    fi
+    cp -p "$CLUSTER_DIR/auth/$f" "$STORE/$f"
+done
+
+echo "Credentials saved to $STORE. Let the ocp script help you use them like this:"
+echo " source <(ocp $CLUSTER_NAME)"
+
