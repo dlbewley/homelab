@@ -49,10 +49,12 @@ rhn_pool_ids:
 
 == OpenShift
 
+See https://gitlab.com/dlbewley/openshift-practice/[openshift-practice repo]
+
 === Lab DNS Setup
 
 For each cluster add DNS records for VIPs needed by vSphere IPI install method.
-See also https://github.com/dlbewley/homelab/tree/master/roles/dhcpd
+See also link:roles/dhcpd/[]
 
 * Edit dynamic DNS zone by freezing it
 
