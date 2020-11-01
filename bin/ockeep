@@ -23,10 +23,15 @@ fi
 keybase_user=$(keybase config get -b current_user)
 base_dir=${keybase_mnt}/private/${keybase_user}/credz/ocp
 STORE="${base_dir}/${CLUSTER_NAME}"
+SKEL="${base_dir}/skel"
 
 if [ ! -d "$STORE" ]; then
     echo "Creating credential store dir $STORE"
     mkdir -p $STORE
+fi
+
+if [ ! -f "$STORE/credz.rc" ]; then
+    cp -p "$SKEL/credz.rc" "$STORE"
 fi
 
 for f in kubeconfig kubeadmin-password; do
