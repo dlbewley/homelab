@@ -11,7 +11,7 @@ dhcpd_subnets:
     description: Lab4 Network lab.bewley.net
     network: 192.168.4.0
     netmask: 255.255.255.0
-    range_start: 192.168.4.10
+    range_start: 192.168.4.16
     range_end: 192.168.4.199
     routers: 192.168.4.1
     next_server: 192.168.4.2
@@ -28,7 +28,7 @@ dhcpd_subnets:
     description: Lab5 Network lab.bewley.net
     network: 192.168.5.0
     netmask: 255.255.255.0
-    range_start: 192.168.5.10
+    range_start: 192.168.5.16
     range_end: 192.168.5.199
     routers: 192.168.5.2
     next_server: 192.168.5.2
@@ -45,13 +45,13 @@ dhcpd_subnets:
     description: Disco Lab6 Network disco.bewley.net
     network: 192.168.6.0
     netmask: 255.255.255.0
-    range_start: 192.168.6.10
+    range_start: 192.168.6.16
     range_end: 192.168.6.199
     routers: 192.168.6.2
     next_server: 192.168.6.2
     domain_name_servers:
       - 192.168.6.2
-    zone_key: disco.bewley.net
+    zone_key: lab.bewley.net
     zones:
       - domain: disco.bewley.net
         domain_name_server: 192.168.1.177

@@ -18,15 +18,15 @@
 
     # folder must pre-exist in vCenter
     vm_folder: /Infra
-    vm_name: ocp4-helper-test
+    vm_name: ocp45-helper
     vm_power_state: poweredon
     vm_osid: rhel8_64Guest
     vm_datastore: VMData-SSD
     vm_disk_gb: 30
     vm_disk_type: thick
     vm_networks:
-      - name: 'VM Network'
-      - name: 'ocp-helper'
+      - name: lab-192-168-4-0-b24
+      - name: lab-192-168-5-0-b24
     vm_memory_mb: 4096
     vm_cpus: 4
     vm_iso_path: "[FreeNAS] iso/rhel-8.2-x86_64-dvd.iso"
@@ -63,7 +63,9 @@
 
 
 - name: Prep VM for helpernode playbook
-  hosts: ocp4-helper
+  hosts: ocp45-helper.lab.bewley.net
+  become: true
+  become_user: root
 
   vars:
     rhn_vars: /Volumes/Keybase/private/dlbewley/credz/redhat/vars.yml
@@ -129,6 +131,7 @@
         value: '1'
         sysctl_set: yes
       when: dual_homed
+#      nmcli con add type ethernet ifname ens224 con-name lab5 ipv4.address 192.168.5.3/24 ipv4.gateway 192.168.5.1 ipv4.method static
 
     - name: Trust secondary (internal) network interface
       firewalld:
@@ -148,3 +151,16 @@
       git:
         repo: "{{ vmware_upi_repo }}"
         dest: /root/vmware-upi
+
+    - name: Stash Red Hat pull-secret
+      file:
+        dest: /root/.openshift/pull-secret
+        state: directory
+        mode: 0700
+      when: pull_secret is defined
+
+    - name: Stash Red Hat pull-secret
+      copy:
+        content: {{ pull_secret }}
+        dest: /root/.openshift/pull-secret
+      when: pull_secret is defined

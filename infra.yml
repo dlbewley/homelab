@@ -15,6 +15,8 @@
       # - websm # cockpit
       # - http
       # - https
+      # - mdns
+
 
     # disable this slow step for now.
     # enable if /usr/share/syslniux changes
@@ -22,6 +24,11 @@
     pxe_repo_http_server: 192.168.4.2
 
   pre_tasks:
+# [root@infra chroot]# firewall-cmd --new-zone wlan --permanent
+# success
+# [root@infra chroot]# firewall-cmd --zone wlan --add-source 192.168.3.0/24 --permanent
+# success
+# nmcli con modify disco ipv4.never-default yes
     # $ nmcli con add type ethernet ifname ens224 con-name lab4 ipv4.addresses 192.168.4.2/24 ipv4.gateway 192.168.4.1 ipv4.method static
     # $ nmcli con add type ethernet ifname ens193 con-name lab5 ipv4.addresses 192.168.5.2/24 ipv4.gateway 192.168.5.1 ipv4.method static
     # $ nmcli con add type ethernet ifname ens193 con-name lab5 ipv4.addresses 192.168.5.2/24 ipv4.gateway 192.168.5.1 ipv4.method static

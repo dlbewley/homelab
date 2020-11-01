@@ -1,5 +1,6 @@
 [ocp4]
 ocp4-helper
+ocp45-helper.lab.bewley.net dual_homed=true
 ocp4-helper-dual dual_homed=true
 ocp4-helper-test
 ocp4-helper-sudo

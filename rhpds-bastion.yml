@@ -33,3 +33,4 @@
       import_role:
         name: ocp3
         tasks_from: bastion.yml
+      tags: ocp

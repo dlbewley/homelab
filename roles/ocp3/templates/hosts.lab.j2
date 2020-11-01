@@ -7,6 +7,9 @@ bastion ansible_connection=local openshift_release=3.11
 
 [OSEv3:vars]
 
+openshift_additional_ca=/etc/pki/tls/certs/ca-bundle.crt
+openshift_node_open_ports=[{'service':'dns','port': '53/udp'}]
+
 ###########################################################################
 ### Ansible Vars
 ###########################################################################
