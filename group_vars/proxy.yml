@@ -3,7 +3,10 @@
 squid_bin_dir: /usr/lib64/squid
 squid_htpasswd: "{{ squid_root_dir }}/htpasswd"
 squid_client_username: proxyuser
-squid_ca_dir: /etc/squid/CA
+# holds CA cert used by squid
+squid_cert_dir: /etc/squid/ssl_cert
+squid_ca_dir: "{{ squid_cert_dir }}/CA"
+# holds generated MITM certs
 squid_ssl_db_dir: /var/lib/ssl_db
 squid_ssl_cert_cache_size: 4MB
 
