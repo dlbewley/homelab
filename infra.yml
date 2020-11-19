@@ -29,10 +29,14 @@
 # [root@infra chroot]# firewall-cmd --zone wlan --add-source 192.168.3.0/24 --permanent
 # success
 # nmcli con modify disco ipv4.never-default yes
+# nmcli con modify disco ipv6.never-default yes
+# sysctl net.ipv4.ip_forward 1
     # $ nmcli con add type ethernet ifname ens224 con-name lab4 ipv4.addresses 192.168.4.2/24 ipv4.gateway 192.168.4.1 ipv4.method static
     # $ nmcli con add type ethernet ifname ens193 con-name lab5 ipv4.addresses 192.168.5.2/24 ipv4.gateway 192.168.5.1 ipv4.method static
     # $ nmcli con add type ethernet ifname ens193 con-name lab5 ipv4.addresses 192.168.5.2/24 ipv4.gateway 192.168.5.1 ipv4.method static
     # $ nmcli con add type ethernet ifname ens193 con-name lab5 ipv4.addresses 192.168.5.2/24 ipv4.gateway 192.168.5.1 ipv4.method static
+    # $ nmcli con add type ethernet ifname ens225 con-name lab7 ipv4.addresses 192.168.7.2/24 ipv4.gateway 192.168.7.1 ipv4.method static
+    # $ nmcli con up lab7
     # - name: Include Network Setup
     #   include_tasks: tasks/network-nmcli.yml
     - name: Include Red Hat pre tasks
@@ -74,9 +78,10 @@
 
 # TODO
 # firewall-cmd --new-zone lab --permanent
-# firewall-cmd -- lab --add-source 192.168.4.0/24 --permanent
+# firewall-cmd --zone lab --add-source 192.168.4.0/24 --permanent
+# firewall-cmd --zone lab --add-source 192.168.7.0/24 --permanent
 # firewall-cmd --new-zone lab5 --permanent
-# firewall-cmd -- lab5 --add-source 192.168.5.0/24 --permanent
+# firewall-cmd --zone lab5 --add-source 192.168.5.0/24 --permanent
 # firewall-cmd --new-zone disco --permanent
 # firewall-cmd --zone disco --add-source 192.168.6.0/24 --permanen
 # sysctl net.ipv4.ip_forward = 1

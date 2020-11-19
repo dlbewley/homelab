@@ -25,7 +25,7 @@ dhcpd_subnets:
         domain_name_server: 192.168.1.177
 
   - name: lab5
-    description: Lab5 Network lab.bewley.net
+    description: Lab5 Trans Proxy Network lab.bewley.net
     network: 192.168.5.0
     netmask: 255.255.255.0
     range_start: 192.168.5.16
@@ -56,5 +56,22 @@ dhcpd_subnets:
       - domain: disco.bewley.net
         domain_name_server: 192.168.1.177
       - domain: 6.168.192.in-addr.arpa
+        domain_name_server: 192.168.1.177
+
+  - name: metal
+    description: Metal Lab7 Network lab.bewley.net
+    network: 192.168.7.0
+    netmask: 255.255.255.0
+    range_start: 192.168.7.16
+    range_end: 192.168.7.199
+    routers: 192.168.7.1
+    next_server: 192.168.7.2
+    domain_name_servers:
+      - 192.168.7.2
+    zone_key: lab.bewley.net
+    zones:
+      - domain: lab.bewley.net
+        domain_name_server: 192.168.1.177
+      - domain: 7.168.192.in-addr.arpa
         domain_name_server: 192.168.1.177
 
