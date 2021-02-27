@@ -2,7 +2,7 @@
 # symlink to oc version using dir structure laid down by getoc
 
 INSTALL_DIR=$HOME/bin
-CLIENTS="oc kubectl"
+CLIENTS="oc kubectl opm"
 INSTALLERS="openshift-install"
 version=$1
 
@@ -29,13 +29,19 @@ for installer in $INSTALLERS; do
     ln -s "$INSTALL_DIR/oc-${version}/${platform}/${installer}" "$INSTALL_DIR/${installer}"
 done
 
-
 version=latest
+echo "Linking noobaa to ${version}/${platform}"
+for client in noobaa; do
+    rm -f "$INSTALL_DIR/$client"
+    ln -s "$INSTALL_DIR/${client}-${version}/${platform}/${client}" "$INSTALL_DIR/${client}"
+done
+
 echo "Linking helm to ${version}/${platform}"
 if [ "$platform" == "macosx" ]; then
-    platform="darwin"
+    plat="darwin"
 fi
 for client in helm; do
     rm -f "$INSTALL_DIR/$client"
-    ln -s "$INSTALL_DIR/helm-${version}/${platform}/helm" "$INSTALL_DIR/${client}"
+    ln -s "$INSTALL_DIR/${client}-${version}/${plat}/${client}" "$INSTALL_DIR/${client}"
 done
+
