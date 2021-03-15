@@ -138,6 +138,14 @@
       when:
         - squid_trans_proxy.enabled | default(False)
 
+# Fix this
+# ==> /var/log/squid/access.log <==
+# 1601074432.430    107 192.168.4.76 NONE/200 0 CONNECT 209.132.183.108:443 - ORIGINAL_DST/209.132.183.108 -
+# ==> /var/log/squid/cache.log <==
+# 2020/09/25 15:53:52 kid1| Error negotiating SSL connection on FD 13: error:00000001:lib(0):func(0):reason(1) (1/-1)
+
+# sslproxy_foreign_intermediate_certs=/etc
+
 # acl intermediate_fetching transaction_initiator certificate-fetching
 # http_access allow intermediate_fetching
 # http_port 3128 tcpkeepalive=60,30,3 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=20MB tls-cert=/etc/squid/bump.crt tls-key=/etc/squid/bump.key cipher=HIGH:MEDIUM:!LOW:!RC4:!SEED:!IDEA:!3DES:!MD5:!EXP:!PSK:!DSS options=NO_TLSv1,NO_SSLv3,SINGLE_DH_USE,SINGLE_ECDH_USE tls-dh=prime256v1:/etc/squid/bump_dhparam.pem
