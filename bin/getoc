@@ -7,7 +7,8 @@ VERSIONS="4.7"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
 INSTALL_DIR="$HOME/bin"
-OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/clients
+OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/x86_64/clients
+OC_NIGHTLY_URL=https://mirror.openshift.com/pub/openshift-v4/clients
 
 if [ $(uname) == "Darwin" ]; then
     PLATFORMS="macosx"
@@ -19,11 +20,12 @@ function download_helm() {
     version=$1
     platform=$2
 
-    echo "Downloading helm for ${version}/${platform}"
     mkdir -p "helm-${version}/${platform}"
     pushd "helm-${version}/${platform}" > /dev/null
     plat=$(echo $platform | sed s/macosx/darwin/) # Darwin platform name is inconsistent on mirror
-    curl -s -O ${OC_BASE_URL}/helm/${version}/helm-${plat}-amd64
+    url=${OC_BASE_URL}/helm/${version}/helm-${plat}-amd64
+    echo "Downloading helm for ${version}/${platform} $url"
+    curl -s -O $url
     chmod 755 helm-${plat}-amd64
     ln -s helm-${plat}-amd64 helm
     popd > /dev/null
@@ -37,12 +39,12 @@ function download_noobaa() {
         return
     fi
 
-    echo "Downloading noobaa for ${version}/${platform}"
     mkdir -p "noobaa-${version}/${platform}"
     pushd "noobaa-${version}/${platform}" > /dev/null
     plat=$(echo $platform | sed s/macosx/mac/)
     url=$(curl -s https://api.github.com/repos/noobaa/noobaa-operator/releases/$version \
             | jq -r ".assets[] | select(.browser_download_url | contains(\"$plat\"))| .browser_download_url")
+    echo "Downloading noobaa for ${version}/${platform} $url"
     curl -s -o noobaa -L $url
     chmod 755 noobaa
     popd > /dev/null
@@ -53,13 +55,19 @@ function download_client() {
     platform=$2
 
     plat=$(echo $platform | sed s/osx//)
-    echo "Downloading oc for ${version}/${platform}"
     # Darwin platform name is inconsistently applied on mirror
     if [ "$version" == "nightly" ]; then
-        curl -s -o oc.tar.gz ${OC_BASE_URL}/ocp-dev-preview/latest/openshift-client-${plat}.tar.gz
+        url=${OC_NIGHTLY_URL}/latest/openshift-client-${plat}.tar.gz
+        echo "Downloading oc for ${version}/${platform} $url"
+        curl -s -o oc.tar.gz $url
     else
-        curl -s -o oc.tar.gz -O ${OC_BASE_URL}/ocp/stable-${version}/openshift-client-${plat}.tar.gz
-        curl -s -o opm.tar.gz ${OC_BASE_URL}/ocp/stable-${version}/opm-${plat}.tar.gz
+        url=${OC_BASE_URL}/ocp/stable-${version}/openshift-client-${plat}.tar.gz
+        echo "Downloading oc for ${version}/${platform} $url"
+        curl -s -o oc.tar.gz -O $url
+
+        url=${OC_BASE_URL}/ocp/stable-${version}/opm-${plat}.tar.gz
+        echo "Downloading opm for ${version}/${platform} $url"
+        curl -s -o opm.tar.gz $url
     fi
 }
 
@@ -68,9 +76,14 @@ function download_installer() {
     platform=$2
     plat=$(echo $platform | sed s/osx//)
 
-    echo "Downloading installer for ${version}/${platform}"
     if [ "$version" == "nightly" ]; then
-        curl -s -o openshift-install.tar.gz ${OC_BASE_URL}/ocp/latest-${version}/openshift-install-${plat}.tar.gz;
+        url=${OC_NIGHTLY_URL}/latest-${version}/openshift-install-${plat}.tar.gz;
+        echo "Downloading installer for ${version}/${platform} $url"
+        curl -s -o openshift-install.tar.gz $url
+    else
+        url=${OC_BASE_URL}/ocp/stable-${version}/openshift-install-${plat}.tar.gz;
+        echo "Downloading installer for ${version}/${platform} $url"
+        curl -s -o openshift-install.tar.gz $url
     fi
 }
 
