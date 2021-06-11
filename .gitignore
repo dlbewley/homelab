@@ -1,3 +1,4 @@
+.cache
 .python-version
 *.retry
 *.swp
