@@ -1,5 +1,6 @@
 # {{ ansible_managed }}
 
+
 # Common settings
 option domain-name "{{ dhcpd_domain_name }}";
 option domain-name-servers {{ dhcpd_domain_name_servers | join(', ') }};
@@ -45,7 +46,11 @@ zone {{ zone.domain }}. {
 subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
 {% if subnet.domain_name_servers is defined %}  option domain-name-servers {{ subnet.domain_name_servers | join(', ') }};
 {% endif %}
-  option routers {{ subnet.routers }};
+{% if subnet.routers is defined %}  option routers {{ subnet.routers }};{% endif %}
+{% if subnet.static_routes is defined %}
+  # only classless format supported here. see https://datatracker.ietf.org/doc/html/rfc3442
+  option classless-static-routes {% for route in subnet.static_routes %} {{ route.prefix }}.{{ route.network }} {{route.gateway}}{% if not loop.last %},{% endif %} {% endfor %};
+{% endif %}
 {% if subnet.range_start is defined and subnet.range_end is defined %}  range {{ subnet.range_start }} {{ subnet.range_end }};
 {% endif %}
 {% if dhcpd_pxe or subnet.pxe %}

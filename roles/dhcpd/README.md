@@ -71,6 +71,11 @@ Variable              | Default | Description
 `dhcpd_next_server`	| _''_	| Needed when enabling PXE. May be overridden in subnet.
 `dhcpd_pxe`	| _true_	| Enable support for PXE booting.
 `dhcpd_subnets`	| _{}_	| Dictionary of subnet definitions. See example below.
+`dhcpd_subnets.routers` | _''_ | Optional default gateway for subnet.
+`dhcpd_subnets.static_routes` | _[{}]_ | List of dictionaries defining optional static routes for subnets. Only support for [classless routes](https://datatracker.ietf.org/doc/html/rfc3442)
+`dhcpd_subnets.static_routes[].network` | _''_ | Significant network octets. Eg: For 10.0.0.0/8 use _'10'_
+`dhcpd_subnets.static_routes[].prefix` | _''_ | Subnet mask length. Eg: For 10.0.0.0/8 use _'8'_
+`dhcpd_subnets.static_routes[].gateway` | _''_ | Gateway router for network. Eg: _'192.168.1.254'_
 `dhcpd_subnets.zone_key` | | Name of key file used for BIND authentication. This is the key name, not the filename. See DNS section above.
 `dhcpd_subnets.zones` | _[{}]_ | List of dictionaries defining DNS related settings for subnets.
 `dhcpd_subnets.zones[].domain` | _''_ | Domain name associated with subnet.
@@ -98,8 +103,71 @@ This example includes configuration for dynamic DNS updates.
          domain_name_server: 192.168.1.177
        - domain: 4.168.192.in-addr.arpa
          domain_name_server: 192.168.1.177
+
+   # disconnected subnet with no default gateway
+   - name: disco
+     description: Disco Lab6 Network disco.bewley.net
+     network: 192.168.6.0
+     netmask: 255.255.255.0
+     range_start: 192.168.6.16
+     range_end: 192.168.6.199
+     static_routes:
+       - network: 10
+         prefix: 8
+         gateway: 192.168.6.2
+       - network: 192.168
+         prefix: 16
+         gateway: 192.168.6.2
+       - network: 172.30.1.16
+         prefix: 29
+         gateway: 192.168.6.2
+     next_server: 192.168.6.2
+     domain_name_servers:
+       - 192.168.6.2
+     zone_key: lab.bewley.net
+     zones:
+       - domain: disco.bewley.net
+         domain_name_server: 192.168.6.2
+       - domain: 6.168.192.in-addr.arpa
+         domain_name_server: 192.168.6.2
 ```
 
+### Example `dhcpd.conf` snippet
+
+```ini
+# Subnet specific settings
+# lab4 Lab4 Network lab.bewley.net
+subnet 192.168.4.0 netmask 255.255.255.0 {
+  option domain-name-servers 192.168.4.2;
+  option routers 192.168.4.1;  range 192.168.4.16 192.168.4.199;
+  class "pxeclients" {
+    match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+    next-server 192.168.4.2;
+    if option architecture-type = 00:07 {
+      filename "uefi/shimx64.efi";
+    } else {
+      filename "pxelinux.0";
+    }
+  }
+}
+
+# disco Disco Lab6 Network disco.bewley.net
+subnet 192.168.6.0 netmask 255.255.255.0 {
+  option domain-name-servers 192.168.6.2;
+  # only classless format supported here. see https://datatracker.ietf.org/doc/html/rfc3442
+  option classless-static-routes  8.10 192.168.6.2,  16.192.168 192.168.6.2,  29.172.30.1.16 192.168.6.2 ;
+  range 192.168.6.16 192.168.6.199;
+  class "pxeclients" {
+    match if substring (option vendor-class-identifier, 0, 9) = "PXEClient";
+    next-server 192.168.6.2;
+    if option architecture-type = 00:07 {
+      filename "uefi/shimx64.efi";
+    } else {
+      filename "pxelinux.0";
+    }
+  }
+}
+```
 ## Dependencies
 
 * PXE role needed if `dhcpd_pxe=true`
