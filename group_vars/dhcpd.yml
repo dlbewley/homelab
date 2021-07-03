@@ -47,6 +47,8 @@ dhcpd_subnets:
     netmask: 255.255.255.0
     range_start: 192.168.6.16
     range_end: 192.168.6.199
+    # non-existant router
+    routers: 192.168.6.254
     static_routes:
       - network: 10
         prefix: 8

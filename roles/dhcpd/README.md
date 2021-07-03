@@ -132,7 +132,7 @@ This example includes configuration for dynamic DNS updates.
          domain_name_server: 192.168.6.2
 ```
 
-### Example `dhcpd.conf` snippet
+### Example `dhcpd.conf` Output Snippet
 
 ```ini
 # Subnet specific settings

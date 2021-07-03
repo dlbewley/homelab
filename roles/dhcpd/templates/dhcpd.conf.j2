@@ -46,7 +46,8 @@ zone {{ zone.domain }}. {
 subnet {{ subnet.network }} netmask {{ subnet.netmask }} {
 {% if subnet.domain_name_servers is defined %}  option domain-name-servers {{ subnet.domain_name_servers | join(', ') }};
 {% endif %}
-{% if subnet.routers is defined %}  option routers {{ subnet.routers }};{% endif %}
+{% if subnet.routers is defined %}  option routers {{ subnet.routers }};
+{% endif %}
 {% if subnet.static_routes is defined %}
   # only classless format supported here. see https://datatracker.ietf.org/doc/html/rfc3442
   option classless-static-routes {% for route in subnet.static_routes %} {{ route.prefix }}.{{ route.network }} {{route.gateway}}{% if not loop.last %},{% endif %} {% endfor %};
