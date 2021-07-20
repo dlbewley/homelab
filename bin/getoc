@@ -6,9 +6,11 @@ VERSIONS="4.7"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
+ROXCTL_VERSION="latest"
 INSTALL_DIR="$HOME/bin"
 OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/x86_64/clients
 OC_NIGHTLY_URL=https://mirror.openshift.com/pub/openshift-v4/clients
+ROXCTL_BASE_URL=https://mirror.openshift.com/pub/rhacs/assets
 
 if [ $(uname) == "Darwin" ]; then
     PLATFORMS="macosx"
@@ -31,6 +33,24 @@ function download_helm() {
     popd > /dev/null
 }
 
+function download_roxctl() {
+    version=$1
+    platform=$2
+    if [ "$platform" != "macosx" ]; then
+        return
+    fi
+
+    mkdir -p "roxctl-${version}/${platform}"
+    pushd "roxctl-${version}/${platform}" > /dev/null
+    plat=$(echo $platform | sed s/macosx/darwin/)
+    url=${ROXCTL_BASE_URL}/${version}/bin/${plat}/roxctl
+    echo "Downloading roxctl for ${version}/${platform} $url"
+    curl -s -o roxctl -L "$url"
+    chmod 755 roxctl
+    popd > /dev/null
+}
+
+
 function download_noobaa() {
     # brew install noobaa/noobaa/noobaa # gave me a 404
     version=$1
@@ -45,7 +65,7 @@ function download_noobaa() {
     url=$(curl -s https://api.github.com/repos/noobaa/noobaa-operator/releases/$version \
             | jq -r ".assets[] | select(.browser_download_url | contains(\"$plat\"))| .browser_download_url")
     echo "Downloading noobaa for ${version}/${platform} $url"
-    curl -s -o noobaa -L $url
+    curl -s -o noobaa -L "$url"
     chmod 755 noobaa
     popd > /dev/null
 }
@@ -110,6 +130,7 @@ for version in $HELM_VERSIONS; do
 done
 for platform in $PLATFORMS; do
     download_noobaa latest $platform
+    download_roxctl latest $platform
 done
 popd > /dev/null
 

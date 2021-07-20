@@ -30,8 +30,8 @@ for installer in $INSTALLERS; do
 done
 
 version=latest
-echo "Linking noobaa to ${version}/${platform}"
-for client in noobaa; do
+for client in noobaa roxctl; do
+    echo "Linking $client to ${version}/${platform}"
     rm -f "$INSTALL_DIR/$client"
     ln -s "$INSTALL_DIR/${client}-${version}/${platform}/${client}" "$INSTALL_DIR/${client}"
 done
