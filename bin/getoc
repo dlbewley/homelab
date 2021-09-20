@@ -11,6 +11,8 @@ INSTALL_DIR="$HOME/bin"
 OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/x86_64/clients
 OC_NIGHTLY_URL=https://mirror.openshift.com/pub/openshift-v4/clients
 ROXCTL_BASE_URL=https://mirror.openshift.com/pub/rhacs/assets
+BUTANE=https://mirror.openshift.com/pub/openshift-v4/clients/butane/latest/butane-darwin-amd64
+ROSA=https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-macosx.tar.gz
 
 if [ $(uname) == "Darwin" ]; then
     PLATFORMS="macosx"
