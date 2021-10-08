@@ -2,7 +2,7 @@
 # Download oc clients from mirror
 
 # VERSIONS="4.7 latest nightly"
-VERSIONS="4.7"
+VERSIONS="4.8"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
@@ -11,7 +11,7 @@ INSTALL_DIR="$HOME/bin"
 OC_BASE_URL=https://mirror.openshift.com/pub/openshift-v4/x86_64/clients
 OC_NIGHTLY_URL=https://mirror.openshift.com/pub/openshift-v4/clients
 ROXCTL_BASE_URL=https://mirror.openshift.com/pub/rhacs/assets
-BUTANE=https://mirror.openshift.com/pub/openshift-v4/clients/butane/latest/butane-darwin-amd64
+BUTANE=https://mirror.openshift.com/pub/openshift-v4/clients/butane
 ROSA=https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-macosx.tar.gz
 
 if [ $(uname) == "Darwin" ]; then
@@ -19,6 +19,23 @@ if [ $(uname) == "Darwin" ]; then
 else
     PLATFORMS="linux"
 fi
+
+function download_butane() {
+    version=$1
+    platform=$2
+    binary="butane"
+
+    if [ "$platform" == "macosx" ]; then
+        binary="butane-darwin-amd64"
+    fi
+
+    url="$BUTANE/$version/$binary"
+    echo "Downloading butane for ${version}/${platform} $url"
+    curl -s -o butane $url
+    chmod 755 butane
+
+}
+
 
 function download_helm() {
     version=$1
@@ -31,7 +48,7 @@ function download_helm() {
     echo "Downloading helm for ${version}/${platform} $url"
     curl -s -O $url
     chmod 755 helm-${plat}-amd64
-    ln -s helm-${plat}-amd64 helm
+    ln -s helm-${plat}-amd64 helm 2>/dev/null
     popd > /dev/null
 }
 
@@ -118,7 +135,7 @@ for version in $VERSIONS; do
         download_client $version $platform
         tar xzf oc.tar.gz
         tar xzf opm.tar.gz
-        ln -s $(echo $platform | sed s/macosx/darwin/)-amd64-opm opm
+        ln -s $(echo $platform | sed s/macosx/darwin/)-amd64-opm opm 2>/dev/null
 
         download_installer $version $platform
         tar xzf openshift-install.tar.gz
@@ -133,6 +150,7 @@ done
 for platform in $PLATFORMS; do
     download_noobaa latest $platform
     download_roxctl latest $platform
+    download_butane latest $platform
 done
 popd > /dev/null
 
