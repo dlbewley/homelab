@@ -28,7 +28,7 @@ dhcpd_subnets:
     description: Lab5 Trans Proxy Network lab.bewley.net
     network: 192.168.5.0
     netmask: 255.255.255.0
-    range_start: 192.168.5.16
+    range_start: 192.168.5.32
     range_end: 192.168.5.199
     routers: 192.168.5.2
     next_server: 192.168.5.2
@@ -45,7 +45,7 @@ dhcpd_subnets:
     description: Disco Lab6 Network disco.bewley.net
     network: 192.168.6.0
     netmask: 255.255.255.0
-    range_start: 192.168.6.16
+    range_start: 192.168.6.32
     range_end: 192.168.6.199
     # non-existant router
     routers: 192.168.6.254
@@ -70,7 +70,7 @@ dhcpd_subnets:
     description: Metal Lab7 Network lab.bewley.net
     network: 192.168.7.0
     netmask: 255.255.255.0
-    range_start: 192.168.7.16
+    range_start: 192.168.7.32
     range_end: 192.168.7.199
     routers: 192.168.7.1
     next_server: 192.168.7.2
