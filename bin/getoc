@@ -2,7 +2,7 @@
 # Download oc clients from mirror
 
 # VERSIONS="4.7 latest nightly"
-VERSIONS="4.8"
+VERSIONS="4.11"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
@@ -49,6 +49,24 @@ function download_helm() {
     curl -s -O $url
     chmod 755 helm-${plat}-amd64
     ln -s helm-${plat}-amd64 helm 2>/dev/null
+    popd > /dev/null
+}
+
+function download_policy_generator() {
+    version=$1
+    platform=$2
+    plat=$(echo $platform | sed s/macosx/darwin/)
+
+    if [ "$version" == "latest" ]; then
+        ver=$(curl -s https://api.github.com/repos/stolostron/policy-generator-plugin/releases/latest  | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+    fi
+
+    url="https://github.com/stolostron/policy-generator-plugin/releases/download/${ver}/${plat}-amd64-PolicyGenerator"
+    echo "Downloading PolicyGeneartor Kustomize plugin for ${version}/${platform} $url"
+    mkdir -p "${HOME}/.config/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator"
+    pushd "${HOME}/.config/kustomize/plugin/policy.open-cluster-management.io/v1/policygenerator" > /dev/null
+    curl -s -o PolicyGenerator -L "$url"
+    chmod 755 PolicyGenerator
     popd > /dev/null
 }
 
@@ -110,6 +128,17 @@ function download_client() {
     fi
 }
 
+function download_mustgather_client() {
+    version=$1
+    platform=$2
+    plat=$(echo $platform | sed s/macosx/Darwin/)
+
+    version=$(curl -q --silent "https://api.github.com/repos/gmeghnag/omc/releases/latest" | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+    url="https://github.com/gmeghnag/omc/releases/download/${version}/omc_${plat}_x86_64.tar.gz"
+    echo "Downloading omc for ${version}/${platform} $url"
+    curl -s -L "$url" | tar xzf - -C ${HOME}/bin omc
+}
+
 function download_installer() {
     version=$1
     platform=$2
@@ -151,6 +180,8 @@ for platform in $PLATFORMS; do
     download_noobaa latest $platform
     download_roxctl latest $platform
     download_butane latest $platform
+    download_mustgather_client latest $platform
+    download_policy_generator latest $platform
 done
 popd > /dev/null
 
