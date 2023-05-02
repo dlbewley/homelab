@@ -2,7 +2,7 @@
 # Download oc clients from mirror
 
 # VERSIONS="4.7 latest nightly"
-VERSIONS="4.11"
+VERSIONS="4.12"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
@@ -13,6 +13,7 @@ OC_NIGHTLY_URL=https://mirror.openshift.com/pub/openshift-v4/clients
 ROXCTL_BASE_URL=https://mirror.openshift.com/pub/rhacs/assets
 BUTANE=https://mirror.openshift.com/pub/openshift-v4/clients/butane
 ROSA=https://mirror.openshift.com/pub/openshift-v4/clients/rosa/latest/rosa-macosx.tar.gz
+NMSTATE=https://github.com/nmstate/nmstate/releases/download
 
 if [ $(uname) == "Darwin" ]; then
     PLATFORMS="macosx"
@@ -35,7 +36,6 @@ function download_butane() {
     chmod 755 butane
 
 }
-
 
 function download_helm() {
     version=$1
@@ -87,6 +87,19 @@ function download_roxctl() {
     popd > /dev/null
 }
 
+function download_nmstate() {
+    version=$1
+    platform=$2
+    archive="nmstatectl-macos-x64.zip"
+    binary="nmstatectl"
+
+    url="$NMSTATE/$version/$archive"
+    echo "Downloading nmstatectl for ${version}/${platform} $url"
+    curl -s -o "$archive" -L "$url"
+    unzip $archive
+    chmod 755 $binary
+    rm $archive
+}
 
 function download_noobaa() {
     # brew install noobaa/noobaa/noobaa # gave me a 404
@@ -182,6 +195,7 @@ for platform in $PLATFORMS; do
     download_butane latest $platform
     download_mustgather_client latest $platform
     download_policy_generator latest $platform
+    download_nmstate "v2.2.10" $platform
 done
 popd > /dev/null
 
