@@ -2,7 +2,7 @@
 # Download oc clients from mirror
 
 # VERSIONS="4.7 latest nightly"
-VERSIONS="4.12"
+VERSIONS="4.13"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
@@ -51,6 +51,22 @@ function download_helm() {
     ln -s helm-${plat}-amd64 helm 2>/dev/null
     popd > /dev/null
 }
+
+function download_skupper() {
+    version=$1
+    platform=$2
+    plat=$(echo $platform | sed s/macosx/mac/)
+
+    if [ "$version" == "latest" ]; then
+        ver=$(curl -s https://api.github.com/repos/skupperproject/skupper/releases/latest  | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
+    fi
+
+    url="https://github.com/skupperproject/skupper/releases/download/${ver}/skupper-cli-${ver}-${plat}-amd64.tgz"
+    echo "Downloading skupper CLI for ${version}/${platform} $url"
+    curl -s -L "$url" | tar xzf - -C ${HOME}/bin skupper
+}
+
+
 
 function download_policy_generator() {
     version=$1
@@ -190,12 +206,13 @@ for version in $HELM_VERSIONS; do
     done
 done
 for platform in $PLATFORMS; do
-    download_noobaa latest $platform
-    download_roxctl latest $platform
     download_butane latest $platform
     download_mustgather_client latest $platform
-    download_policy_generator latest $platform
     download_nmstate "v2.2.10" $platform
+    download_noobaa latest $platform
+    download_policy_generator latest $platform
+    download_roxctl latest $platform
+    download_skupper latest $platform
 done
 popd > /dev/null
 
