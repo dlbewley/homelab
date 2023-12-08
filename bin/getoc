@@ -2,7 +2,7 @@
 # Download oc clients from mirror
 
 # VERSIONS="4.7 latest nightly"
-VERSIONS="4.13"
+VERSIONS="4.14"
 #CLIENT_VERSIONS="4.4 4.5"
 #INSTALLER_VERSIONS="4.4 4.5"
 HELM_VERSIONS="latest"
@@ -65,8 +65,6 @@ function download_skupper() {
     echo "Downloading skupper CLI for ${version}/${platform} $url"
     curl -s -L "$url" | tar xzf - -C ${HOME}/bin skupper
 }
-
-
 
 function download_policy_generator() {
     version=$1
